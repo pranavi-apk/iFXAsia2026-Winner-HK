@@ -26,6 +26,10 @@ class Decision(BaseModel):
     note: str = ""
 
 
+class ChatMessage(BaseModel):
+    prompt: str
+
+
 class FindingDecision(BaseModel):
     disposition: str
     note: str = ""
@@ -203,3 +207,32 @@ def monitor(case_id: str):
     _apply_risk(case)
     append_audit(case, "monitoring", f"Re-screened {len(parties)} names. New public-list hits: {added}.")
     return save(case)
+
+
+@app.post("/api/cases/{case_id}/chat")
+def case_chat(case_id: str, body: ChatMessage):
+    try:
+        case = load(case_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Case not found") from None
+    from tally.llm import chat
+    context = {
+        "entity": case.get("entity"),
+        "risk": case.get("risk"),
+        "findings": case.get("findings"),
+        "people": case.get("people"),
+        "companies": case.get("companies"),
+    }
+    messages = [
+        {"role": "system", "content": (
+            "You are Tally AI Compliance Officer Assistant. Answer questions accurately based ONLY on this case data: "
+            f"{json.dumps(context)}. Be concise, professional, and clear."
+        )},
+        {"role": "user", "content": body.prompt},
+    ]
+    try:
+        reply = chat(messages, max_tokens=600)
+    except Exception as exc:
+        reply = f"Could not consult LLM: {str(exc)}"
+    return {"reply": reply}
+

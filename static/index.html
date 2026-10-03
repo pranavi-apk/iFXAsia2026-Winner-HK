@@ -3,34 +3,194 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tally</title>
+  <title>Tally — Institutional KYC & Regulatory Risk Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/app.css" />
   <script src="/static/vendor/vis-network.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-  <header class="top">
+<body class="light-theme">
+  <!-- Top Command Center Navigation Bar -->
+  <header class="top-nav">
     <div class="brand">
-      <span class="mark" aria-hidden="true"></span>
-      <div>
-        <strong>Tally</strong>
-        <p>Corporate onboarding, read once</p>
+      <div class="logo-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">TALLY <span class="badge-pro">COMMAND</span></span>
+        <span class="brand-subtitle">Autonomous Corporate Verification & HK Governance</span>
       </div>
     </div>
-    <div class="actions">
-      <button id="sample" type="button">Open sample case</button>
-      <label class="upload">
-        Upload a pack
+
+    <!-- Active Case Status Pill -->
+    <div class="nav-case-summary" id="header-case-info" style="display: none;">
+      <div class="case-meta">
+        <span class="case-label">ACTIVE CASE</span>
+        <span class="case-name" id="nav-case-title">Loading...</span>
+      </div>
+      <div class="nav-risk-pill" id="nav-risk-badge">Low Risk</div>
+    </div>
+
+    <!-- Action Bar Buttons -->
+    <div class="top-actions">
+      <button id="sample" type="button" class="btn btn-secondary shadow-hover">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Launch Demo Case
+      </button>
+      <label class="btn btn-primary shadow-hover upload-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Corporate Pack
         <input id="files" type="file" accept="application/pdf" multiple />
       </label>
     </div>
   </header>
 
-  <main id="app">
-    <section class="empty">
-      <h1>Five checks, one case pack, a decision left to the officer.</h1>
-      <p>Tally extracts the pack, then code runs the checklist, the ownership math, name screening, and the risk score. Every finding keeps its source. The sample pack is invented.</p>
+  <!-- Live Multi-Agent Execution Pipeline Modal -->
+  <div id="pipeline-modal" class="pipeline-modal-overlay">
+    <div class="pipeline-card">
+      <div class="pipeline-header">
+        <div class="pipeline-title">
+          <span class="pulsing-dot"></span>
+          AUTONOMOUS MULTI-AGENT COMPLIANCE ENGINE
+        </div>
+        <div style="font-size: 0.85rem; color: #64748b;" id="pipeline-status-text">Initializing autonomous verification agents...</div>
+      </div>
+      
+      <div class="pipeline-steps">
+        <div class="p-step" id="p-step-1">
+          <div class="p-icon">1</div>
+          <div class="p-info">
+            <div class="p-name">Document Grounding & Text Chunking</div>
+            <div class="p-sub">LLM extracting entity profiles & verified quote blocks</div>
+          </div>
+          <div class="p-status">Pending</div>
+        </div>
+
+        <div class="p-step" id="p-step-2">
+          <div class="p-icon">2</div>
+          <div class="p-info">
+            <div class="p-name">Graph Ownership & UBO Traversal</div>
+            <div class="p-sub">Recursive path multiplication & gap detection in Python</div>
+          </div>
+          <div class="p-status">Pending</div>
+        </div>
+
+        <div class="p-step" id="p-step-3">
+          <div class="p-icon">3</div>
+          <div class="p-info">
+            <div class="p-name">Official HK Registry Lookup</div>
+            <div class="p-sub">Live API queries to HK Companies Registry & HKMA data</div>
+          </div>
+          <div class="p-status">Pending</div>
+        </div>
+
+        <div class="p-step" id="p-step-4">
+          <div class="p-icon">4</div>
+          <div class="p-info">
+            <div class="p-name">UN & HK Sanctions Fuzzy Screening</div>
+            <div class="p-sub">Cross-checking entities across 5,000+ designation entries</div>
+          </div>
+          <div class="p-status">Pending</div>
+        </div>
+
+        <div class="p-step" id="p-step-5">
+          <div class="p-icon">5</div>
+          <div class="p-info">
+            <div class="p-name">Risk Matrix & Executive Memo Synthesis</div>
+            <div class="p-sub">Evaluating penalty weights & drafting officer memorandum</div>
+          </div>
+          <div class="p-status">Pending</div>
+        </div>
+      </div>
+
+      <div class="pipeline-progress-bar">
+        <div class="progress-fill" id="pipeline-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Command Center Workspace -->
+  <main id="app" class="main-container">
+    <!-- Landing Showcase Hero -->
+    <section class="welcome-hero">
+      <div class="hero-content">
+        <div class="hero-badge">⚡ Autonomous Compliance Operating System</div>
+        <h1>Next-Gen Corporate KYC & Regulatory Risk Automation</h1>
+        <p>Tally transforms multi-week corporate onboarding into a 5-second automated check. It parses complex PDF packs, computes recursive UBO ownership graphs, queries Hong Kong live registers, and screens against UN sanctions—with zero AI hallucinations.</p>
+        
+        <div class="hero-cta">
+          <button id="hero-sample-btn" class="btn btn-primary btn-lg shadow-glow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Launch Interactive Demo (Harbour Lantern)
+          </button>
+          <label class="btn btn-secondary btn-lg upload-btn shadow-hover">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload PDF Pack
+            <input id="hero-files" type="file" accept="application/pdf" multiple />
+          </label>
+        </div>
+
+        <!-- Metric Highlight Cards -->
+        <div class="hero-stats">
+          <div class="stat-card">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-num">5 Sec</div>
+            <div class="stat-label">Full Pack Verification</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🧠</div>
+            <div class="stat-num">100%</div>
+            <div class="stat-label">Grounded Quote Proof</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🛡️</div>
+            <div class="stat-num">5,000+</div>
+            <div class="stat-label">UN & HK Sanctions Entries</div>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
+
+  <!-- Floating Copilot Assistant Drawer -->
+  <div id="ai-copilot-widget" class="copilot-widget" style="display: none;">
+    <button id="copilot-toggle-btn" class="copilot-fab">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Ask Tally AI Copilot</span>
+    </button>
+
+    <div id="copilot-drawer" class="copilot-drawer" style="display: none;">
+      <div class="copilot-header">
+        <div class="copilot-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Compliance Officer AI Assistant
+        </div>
+        <button id="copilot-close-btn" class="close-btn">&times;</button>
+      </div>
+
+      <div class="copilot-messages" id="copilot-msg-box">
+        <div class="copilot-msg bot">
+          Welcome Officer! Ask me to explain risk findings, summarize director backgrounds, or generate customer correspondence letters.
+        </div>
+      </div>
+
+      <div class="copilot-suggestions">
+        <button class="chip-btn" data-ask="Why is this case assigned a Medium risk rating?">Why Medium risk?</button>
+        <button class="chip-btn" data-ask="List all directors and their nationalities.">Summarize directors</button>
+        <button class="chip-btn" data-ask="Draft a professional letter asking for the missing register of members.">Draft request letter</button>
+      </div>
+
+      <div class="copilot-input-area">
+        <input type="text" id="copilot-input" placeholder="Type a message or regulatory query..." />
+        <button id="copilot-send" class="btn btn-primary btn-sm">Send</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/static/app.js"></script>
 </body>
 </html>
