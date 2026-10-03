@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tally</title>
+  <link rel="stylesheet" href="/static/app.css" />
+  <script src="/static/vendor/vis-network.min.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <div>
+        <strong>Tally</strong>
+        <p>Corporate onboarding, read once</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="sample" type="button">Open sample case</button>
+      <label class="upload">
+        Upload a pack
+        <input id="files" type="file" accept="application/pdf" multiple />
+      </label>
+    </div>
+  </header>
+
+  <main id="app">
+    <section class="empty">
+      <h1>Five checks, one case pack, a decision left to the officer.</h1>
+      <p>Tally extracts the pack, then code runs the checklist, the ownership math, name screening, and the risk score. Every finding keeps its source. The sample pack is invented.</p>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>

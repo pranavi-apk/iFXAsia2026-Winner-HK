@@ -1,0 +1,34 @@
+{
+  "label": "Illustrative sample. Not an institution's risk policy.",
+  "points": {
+    "missing_document": 12,
+    "expired_document": 10,
+    "address_mismatch": 15,
+    "ownership_presence_conflict": 15,
+    "ownership_percent_conflict": 20,
+    "corporate_owner_without_register": 15,
+    "sanctions_possible_match": 40,
+    "pep_sample_match": 20,
+    "high_risk_jurisdiction": 20,
+    "source_of_funds_inconsistency": 15,
+    "registry_no_match": 8
+  },
+  "review_months": 12,
+  "required_documents": [
+    {"type": "certificate_of_incorporation", "label": "Certificate of incorporation"},
+    {"type": "register_of_directors", "label": "Register of directors"},
+    {"type": "ownership_declaration", "label": "Ownership declaration"},
+    {"type": "proof_of_address", "label": "Proof of address"},
+    {"type": "source_of_funds", "label": "Source of funds"}
+  ],
+  "bands": [
+    {"max": 20, "rating": "Low"},
+    {"max": 45, "rating": "Medium"},
+    {"max": 1000, "rating": "High"}
+  ],
+  "match_threshold": 0.86,
+  "high_risk_jurisdictions": {
+    "label": "Illustrative sample. Not the HKMA country-risk schedule.",
+    "names": ["russia", "russian federation", "iran", "north korea", "syria", "myanmar"]
+  }
+}

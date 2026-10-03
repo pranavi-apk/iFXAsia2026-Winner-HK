@@ -1,0 +1,105 @@
+:root {
+  --paper: #f3efe6;
+  --ink: #1d1a16;
+  --muted: #6d655c;
+  --line: #ddd4c6;
+  --card: #fffdf8;
+  --fail: #8d2f2a;
+  --ok: #1e6a45;
+  --warn: #8a5a12;
+  --focus: #1d4e89;
+  color-scheme: light;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); }
+button, label.upload { font: inherit; cursor: pointer; }
+button, .upload {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 999px;
+  padding: 0.55rem 0.95rem;
+}
+.upload { background: transparent; color: var(--ink); }
+.upload input { display: none; }
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+  background: #faf7f1;
+}
+.brand { display: flex; gap: 0.75rem; align-items: center; }
+.brand p, .muted { margin: 0; color: var(--muted); font-size: 0.85rem; }
+.mark {
+  width: 1.1rem;
+  height: 1.4rem;
+  background: repeating-linear-gradient(to bottom, var(--ink) 0 2px, transparent 2px 6px);
+}
+.actions { display: flex; gap: 0.5rem; }
+main { padding: 1.5rem; max-width: 1180px; margin: 0 auto; }
+.empty { max-width: 38rem; padding-top: 3rem; }
+h1, h2, h3 { font-family: Palatino, "Iowan Old Style", Georgia, serif; font-weight: 500; }
+h1 { font-size: 2.4rem; line-height: 1.15; margin-bottom: 0.75rem; }
+.modules { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; }
+.card, .panel, .finding, .node {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.card { padding: 0.9rem; min-height: 7.5rem; }
+.card span, .pill { display: inline-block; font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.status-attention { color: var(--fail); }
+.status-review { color: var(--warn); }
+.status-clear, .status-ready { color: var(--ok); }
+.layout { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 1rem; margin-top: 1rem; }
+.panel { padding: 1rem; }
+.views { display: grid; gap: 1.25rem; }
+.view-title { margin: 0 0 0.5rem; font-size: 1rem; }
+.graph {
+  height: 420px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 1px 1px, #e6dfd2 1px, transparent 0) 0 0 / 18px 18px,
+    #f7f3eb;
+  border: 1px solid var(--line);
+}
+.legend { display: flex; flex-wrap: wrap; gap: 0.9rem; margin: 0 0 0.8rem; color: var(--muted); font-size: 0.8rem; }
+.swatch { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 2px; margin-right: 0.35rem; vertical-align: -1px; border: 1.5px solid; }
+.finding { padding: 0.8rem 0.9rem; margin-bottom: 0.5rem; text-align: left; width: 100%; color: inherit; background: var(--card); }
+.finding.active { border-color: var(--focus); }
+.evidence { font-size: 0.92rem; }
+blockquote { margin: 0.5rem 0; padding-left: 0.8rem; border-left: 3px solid var(--focus); }
+pre {
+  white-space: pre-wrap;
+  font-family: inherit;
+  background: #f7f3eb;
+  padding: 0.8rem;
+  border-radius: 10px;
+}
+.decision { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 1rem 0; }
+select, textarea {
+  font: inherit;
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 10px;
+  padding: 0.45rem 0.6rem;
+}
+textarea { width: 100%; min-height: 4.5rem; }
+.banner { padding: 0.7rem 0.9rem; border-radius: 10px; background: #efe7d8; margin-bottom: 1rem; }
+.factor { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: 0.25rem 0; border-bottom: 1px solid var(--line); }
+.factor input, .stack input, .stack textarea { width: 8rem; }
+.stack { display: grid; gap: 0.45rem; margin-top: 0.5rem; }
+.stack textarea { width: 100%; min-height: 4.5rem; }
+.due { color: var(--fail); }
+.audit { padding-left: 1.1rem; font-size: 0.85rem; }
+.audit li { margin: 0.35rem 0; }
+.error { color: var(--fail); }
+@media (max-width: 900px) {
+  .modules, .layout { grid-template-columns: 1fr; }
+  .top { align-items: flex-start; flex-direction: column; }
+}

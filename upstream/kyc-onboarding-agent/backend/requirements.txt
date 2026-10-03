@@ -1,0 +1,24 @@
+# Core Framework
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+pydantic==2.6.1
+pydantic-settings==2.1.0
+
+# File handling
+python-multipart==0.0.6
+aiofiles==23.2.1
+
+# CORS and middleware
+python-jose[cryptography]==3.3.0
+
+# Utilities
+python-dotenv==1.0.1
+email-validator==2.1.0
+
+# Date handling
+python-dateutil==2.8.2
+
+# Document Intelligence (Optional)
+# If you want AI-powered document classification, install these:
+# llama-cloud>=1.2.0  # For LlamaIndex document intelligence
+# Pillow>=10.0.0      # For image processing
