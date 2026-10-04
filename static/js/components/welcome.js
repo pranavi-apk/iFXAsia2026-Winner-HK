@@ -7,14 +7,13 @@ const STATS = [
   { icon: "🛡️", num: "5,000+", label: "UN & HK Sanctions Entries" },
 ];
 
-// Landing view. `onSample()` and `onUpload(files)` are supplied by main.js.
 export function renderWelcome(container, { onSample, onUpload }) {
   container.innerHTML = `
-    <section class="welcome-hero">
+    <div class="welcome-hero">
       <div class="hero-content">
-        <div class="hero-badge">⚡ Autonomous Corporate Onboarding</div>
+        <div class="hero-badge">⚡ Autonomous KYC Workspace</div>
         <h1>Ownership & Control Intelligence</h1>
-        <p>Visualise corporate structure, ultimate beneficial owners (UBOs), and key relationships with verified documentary proof and automated sanctions screening.</p>
+        <p>Select a compliance case to disentangle UBO structures, screen live Sanctions & PEP lists, and interact with the AI Copilot.</p>
 
         <div class="hero-cta">
           <button id="hero-sample-btn" class="btn btn-primary btn-lg shadow-glow">
@@ -23,23 +22,30 @@ export function renderWelcome(container, { onSample, onUpload }) {
           </button>
           <label class="btn btn-secondary btn-lg upload-btn shadow-hover">
             ${icon("upload", 18)}
-            Upload PDF Pack
+            Upload Corporate PDF Pack
             <input id="hero-files" type="file" accept="application/pdf" multiple />
           </label>
         </div>
 
         <div class="hero-stats">
-          ${STATS.map(
-            (s) => `
           <div class="stat-card">
-            <div class="stat-icon">${s.icon}</div>
-            <div class="stat-num">${s.num}</div>
-            <div class="stat-label">${s.label}</div>
-          </div>`
-          ).join("")}
+            <div class="stat-icon">⚡</div>
+            <div class="stat-num">5 Sec</div>
+            <div class="stat-label">Full Pack Verification</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🧠</div>
+            <div class="stat-num">100%</div>
+            <div class="stat-label">Grounded Quote Proof</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🛡️</div>
+            <div class="stat-num">5,000+</div>
+            <div class="stat-label">UN & HK Sanctions Entries</div>
+          </div>
         </div>
       </div>
-    </section>`;
+    </div>`;
 
   container.querySelector("#hero-sample-btn").addEventListener("click", onSample);
   container.querySelector("#hero-files").addEventListener("change", (e) => onUpload(e.target.files));

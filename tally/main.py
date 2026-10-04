@@ -13,5 +13,10 @@ app.include_router(router)
 
 
 @app.get("/")
-def index():
+def landing():
+    return FileResponse(STATIC / "index_landing.html")
+
+@app.get("/app")
+def app_dashboard():
     return FileResponse(STATIC / "index.html")
+

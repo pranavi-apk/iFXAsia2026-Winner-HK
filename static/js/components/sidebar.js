@@ -5,19 +5,11 @@ import { icon } from "../lib/icons.js";
 // sections/index.js adds its nav entry. Callbacks come from main.js.
 export function mountSidebar(host, { sections, activeId, onSelect, onSample, onUpload }) {
   host.innerHTML = `
-    <div class="sidebar-top">
-      <a href="/" class="back-link">
-        ${icon("back", 14, { strokeWidth: 2.5 })}
-        Back to Case
-      </a>
-    </div>
-
     <nav class="sidebar-nav">
       ${sections
         .map(
           (s) => `
       <button class="nav-item${s.id === activeId ? " active" : ""}" data-section="${s.id}">
-        <span class="nav-num${s.done ? " check-icon" : ""}">${s.done ? icon("check", 12, { strokeWidth: 3 }) : s.step}</span>
         <span class="nav-label">${s.label}</span>
       </button>`
         )

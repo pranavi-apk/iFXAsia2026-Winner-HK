@@ -15,6 +15,15 @@ export const api = {
 
   getCase: (id) => request(`/api/cases/${encodeURIComponent(id)}`),
 
+  getScreening: (id) => request(`/api/cases/${encodeURIComponent(id)}/sanctions`),
+
+  liveLookup: (id, name) =>
+    request(`/api/cases/${encodeURIComponent(id)}/sanctions/lookup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    }),
+
   chat: (id, prompt) =>
     request(`/api/cases/${encodeURIComponent(id)}/chat`, {
       method: "POST",

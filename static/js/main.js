@@ -17,13 +17,17 @@ function showWelcome() {
 function showSection(id) {
   state.sectionId = id;
   setActiveNav(id);
-  if (!state.case) return; // nothing to show until a case is open
+  if (!state.case) {
+    // If user clicks a section before loading a case, auto-load sample demo case
+    openSample();
+    return;
+  }
   sectionById(id).mount(app, state.case);
 }
 
 function showCase(data) {
   state.case = data;
-  history.replaceState(null, "", `/?case=${data.id}`);
+  history.replaceState(null, "", `/app?case=${data.id}`);
   showCopilot();
   showSection(state.sectionId);
 }
@@ -58,7 +62,9 @@ mountPipelineModal($("#overlays"));
 mountCopilot($("#overlays"));
 renderWelcome(app, { onSample: openSample, onUpload: openUpload });
 
-const savedCase = new URLSearchParams(location.search).get("case");
+const savedCase = new URLSearchParams(location.search).get("case") || "harbour-lantern";
 if (savedCase) {
-  api.getCase(savedCase).then(showCase).catch(() => {});
+  api.getCase(savedCase).then(showCase).catch(() => {
+    openSample();
+  });
 }
