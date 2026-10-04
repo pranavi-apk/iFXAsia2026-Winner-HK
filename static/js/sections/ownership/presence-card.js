@@ -23,7 +23,6 @@ export function renderPresenceCard({ presence }) {
 
       <div class="world-map-wrap">
         <div id="leaflet-global-map" class="world-map-visual"></div>
-        <aside id="map-side-note" class="map-side-note"></aside>
       </div>
     </div>`;
 }

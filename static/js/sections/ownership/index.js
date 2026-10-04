@@ -1,10 +1,10 @@
 import { $$ } from "../../core/dom.js";
 import { pageHeader } from "../../components/page-header.js";
 import { icon } from "../../lib/icons.js";
-import { initPresenceMap } from "./map.js";
+import { initPresenceMap } from "./map/index.js";
 import { renderInspector } from "./inspector.js";
 import { renderPresenceCard } from "./presence-card.js";
-import { renderStructureTree } from "./structure-tree.js";
+import { mountStructure, renderStructureCard } from "./structure/index.js";
 import { buildOwnershipView } from "./view-model.js";
 
 const VIEW_TABS = ["Structure View", "Table View", "Key Findings"];
@@ -36,7 +36,7 @@ export default {
       <div class="dashboard-grid">
         <div class="left-panel-col">
           ${renderPresenceCard(view)}
-          ${renderStructureTree(view)}
+          ${renderStructureCard()}
         </div>
         <div class="right-panel-col">
           ${renderInspector(view)}
@@ -52,8 +52,10 @@ export default {
       });
     });
 
+    mountStructure(container.querySelector("#structure-card"), view);
+
     container.querySelector("#btn-export-top").addEventListener("click", () => window.print());
 
-    setTimeout(() => initPresenceMap({ countries: view.mapCountries, dots: view.mapDots }), MAP_INIT_DELAY_MS);
+    setTimeout(() => initPresenceMap(view.map), MAP_INIT_DELAY_MS);
   },
 };

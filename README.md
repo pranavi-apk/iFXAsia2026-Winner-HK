@@ -30,8 +30,10 @@ static/                     frontend, plain ES modules, no build step
     core/                   api calls, shared state, DOM helpers
     components/             sidebar, pipeline modal, copilot, welcome, page header
     sections/               one folder per sidebar section; index.js lists them
-      ownership/            the only built section (map, tree, inspector, view-model.js)
-    lib/                    flags and icons
+      ownership/            the only built section: map, inspector, view-model.js,
+                            and structure/ (the pannable ownership canvas)
+    lib/                    countries (names, flags, map positions) and icons
+    mock/intake.js          mock onboarding intake, grouped by the bank's 8 requirement groups
 tally/                      backend, FastAPI
   main.py                   app setup only
   api/                      routes: cases, review, monitoring, policy, chat
