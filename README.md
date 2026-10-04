@@ -1,8 +1,8 @@
-# Tally
+# Tracy
 
-Tally reads one corporate onboarding pack, runs five compliance checks, and leaves the decision with the officer.
+Tracy reads one corporate onboarding pack, runs five compliance checks, and leaves the decision with the officer.
 
-The case flow is adapted from [kyc-onboarding-agent](https://github.com/zubertaj123/kyc-onboarding-agent) (MIT). A copy of that repo is in `upstream/kyc-onboarding-agent`. Ownership percentages are calculated in code. Name matching is a visible threshold. The model only extracts text and drafts the memo.
+Ownership percentages are calculated in code. Name matching is a visible threshold. The model only extracts text and drafts the memo.
 
 ## Run
 
