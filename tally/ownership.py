@@ -1,5 +1,4 @@
-"""UBO CHART
-"""
+"""UBO CHART"""
 
 
 def _key(name: str) -> str:
