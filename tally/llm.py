@@ -4,7 +4,7 @@ import re
 import httpx
 
 from tally.config import llm_settings
-
+//AI INTEGRATION
 
 def chat(messages: list[dict], max_tokens: int = 4096) -> str:
     settings = llm_settings()
