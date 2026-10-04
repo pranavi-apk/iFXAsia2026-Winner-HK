@@ -14,3 +14,18 @@ class FindingDecision(BaseModel):
 
 class ChatMessage(BaseModel):
     prompt: str
+
+
+class MemoDraft(BaseModel):
+    recommendation: str
+    summary: str = ""
+    analyst_comments: str = ""
+    decision_text: str = ""
+
+
+class PurposeEdit(BaseModel):
+    business_activity: str = ""
+    expected_transactions: str = ""
+    target_markets: str = ""
+    expected_annual_volume: str = ""
+    introducer: str = ""

@@ -1,8 +1,9 @@
-"""Hong Kong public-register lookups.
+"""Public identity lookups.
 
 Companies Registry open data supports a name begins-with search of live local
 companies. The HKMA register of authorized institutions and local representative
-offices is a public JSON API. ICRIS paid search is not used.
+offices is a public JSON API. ICRIS paid search is not used. GLEIF is the free
+LEI index and only covers entities that have an LEI.
 """
 
 from pathlib import Path
@@ -11,11 +12,13 @@ import httpx
 import json
 
 from tally.config import DATA
-from tally.screening import _tokens, list_score
+from tally.screening import _fold, _tokens, list_score
 
 CACHE = DATA / "registry_cache"
 CR_URL = "https://data.cr.gov.hk/cr/api/api/v1/api_builder/json/local/search"
 HKMA_URL = "https://api.hkma.gov.hk/public/bank-svf-info/register-ais-lros"
+GLEIF_URL = "https://api.gleif.org/api/v1/lei-records"
+GLEIF_NOTE = "GLEIF is free and open. It only lists entities that have an LEI, and an LEI is not a shareholder register."
 STOP = {"limited", "ltd", "company", "holdings", "trading", "the", "and", "hong", "kong"}
 _HKMA = None
 
@@ -140,6 +143,77 @@ def hkma_search(legal_name: str) -> dict:
         "legal_name": row.get("name") or name,
         "institution_type": row.get("type") or "",
         "address": row.get("local_address") or "",
+    }
+
+
+def _gleif_names(entity: dict) -> list[str]:
+    names = []
+    legal = (entity.get("legalName") or {}).get("name") or ""
+    if legal:
+        names.append(legal)
+    for bucket in ("otherNames", "transliteratedOtherNames"):
+        for item in entity.get(bucket) or []:
+            name = (item or {}).get("name") or ""
+            if name and name not in names:
+                names.append(name)
+    return names
+
+
+def _identity_score(query: str, candidate: str) -> float:
+    """Prefer the same legal name. A longer different name should not pass."""
+    if _fold(query) == _fold(candidate):
+        return 1.0
+    query_tokens = set(_tokens(query))
+    candidate_tokens = set(_tokens(candidate))
+    extra = {token for token in candidate_tokens - query_tokens if token not in STOP and len(token) > 2}
+    if extra:
+        if not query_tokens or not candidate_tokens:
+            return 0.0
+        return len(query_tokens & candidate_tokens) / len(query_tokens | candidate_tokens)
+    return list_score(query, candidate)
+
+
+def gleif_search(legal_name: str) -> dict:
+    name = (legal_name or "").strip()
+    if not name:
+        return {"status": "skipped", "source": "GLEIF", "note": GLEIF_NOTE}
+    try:
+        response = httpx.get(
+            GLEIF_URL,
+            params={"filter[fulltext]": name, "page[size]": 15},
+            headers={"Accept": "application/vnd.api+json"},
+            timeout=25,
+        )
+        response.raise_for_status()
+        rows = response.json().get("data") or []
+    except Exception as exc:
+        return {"status": "unavailable", "source": "GLEIF", "query": name, "detail": type(exc).__name__, "note": GLEIF_NOTE}
+    best = None
+    for row in rows:
+        attributes = row.get("attributes") or {}
+        entity = attributes.get("entity") or {}
+        for candidate in _gleif_names(entity):
+            score = _identity_score(name, candidate)
+            if best is None or score > best["score"]:
+                best = {"score": score, "row": row, "candidate": candidate, "entity": entity, "attributes": attributes}
+    if not best or best["score"] < 0.92:
+        return {"status": "no_match", "source": "GLEIF", "query": name, "note": GLEIF_NOTE}
+    entity = best["entity"]
+    registration = (best["attributes"].get("registration") or {})
+    address = entity.get("legalAddress") or {}
+    return {
+        "status": "match",
+        "source": "GLEIF",
+        "query": name,
+        "score": best["score"],
+        "lei": best["row"].get("id") or "",
+        "legal_name": best["candidate"],
+        "registered_name": (entity.get("legalName") or {}).get("name") or best["candidate"],
+        "jurisdiction": entity.get("jurisdiction") or "",
+        "country": address.get("country") or "",
+        "entity_status": entity.get("status") or "",
+        "registration_status": registration.get("status") or "",
+        "note": GLEIF_NOTE,
     }
 
 

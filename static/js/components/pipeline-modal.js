@@ -107,22 +107,24 @@ export async function runWithPipeline(task) {
   };
 
   advance();
-  const timer = setInterval(() => {
-    if (current < STEPS.length - 1) advance();
-  }, STEP_INTERVAL_MS);
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const pending = task();
 
   try {
-    const result = await task();
+    while (current < STEPS.length) {
+      await wait(STEP_INTERVAL_MS);
+      if (current < STEPS.length) advance();
+    }
+    const result = await pending;
     $$(".p-step").forEach((el) => {
       el.className = "p-step completed";
       el.querySelector(".p-status").textContent = "Completed ✓";
     });
     progress.style.width = "100%";
     statusText.textContent = "Compliance verification finished successfully!";
-    await new Promise((resolve) => setTimeout(resolve, CLOSE_DELAY_MS));
+    await wait(CLOSE_DELAY_MS);
     return result;
   } finally {
-    clearInterval(timer);
     modal.classList.remove("active");
   }
 }

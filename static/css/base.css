@@ -44,11 +44,18 @@
   padding: 0;
 }
 
+html,
+body.light-theme {
+  height: 100%;
+  overflow: hidden;
+}
+
 body.light-theme {
   background-color: var(--bg-main);
   color: var(--text-main);
   font-family: var(--font-body);
   line-height: 1.5;
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   -webkit-font-smoothing: antialiased;
 }

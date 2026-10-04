@@ -17,17 +17,39 @@ Return only JSON with this shape:
   "ownership_links": [{"owner": "", "owner_kind": "person", "owned": "", "percent": 0, "source_document": "", "quote": ""}],
   "addresses": [{"kind": "registered or proof_of_address", "value": "", "source_document": "", "quote": ""}],
   "identity_documents": [{"person": "", "expiry": "", "source_document": "", "quote": ""}],
-  "business": {"purpose": "", "expected_activity": "", "declared_source_of_funds": "", "observed_credits": "", "introducer": "", "evidence": [{"document": "", "quote": ""}]}
+  "business": {"purpose": "", "expected_activity": "", "declared_source_of_funds": "", "observed_credits": "", "introducer": "", "target_markets": "", "expected_annual_volume": "", "evidence": [{"document": "", "quote": ""}]},
+  "funding_sources": [{"name": "", "category": "", "description": "", "amount": null, "currency": "", "document": "", "quote": ""}],
+  "fund_events": [{"date": "", "amount": null, "currency": "", "description": "", "counterparty": "", "document": "", "quote": ""}]
 }
 
 Rules:
+- Documents may be in English, Mandarin, or Cantonese. Do not translate a quote. Copy it in the language of the document.
+- Keep each name in the script the document uses. Put the other script, and any "also known as" name, in aliases.
 - owner, owned, and person names should be the English name when the document gives one. Put Chinese names and "also known as" names in aliases.
 - percent is a number. "60 percent" means 60.
+- funding_sources are only the inflows the pack states: who the money comes from, what kind of inflow it is, and the amount if that same sentence states one. Do not invent a split.
+- fund_events are dated inflows or the date the source-of-funds statement was prepared. date is YYYY-MM-DD. Leave amount null when the sentence has no figure.
+- expected_annual_volume is the turnover or volume phrase copied from the pack, including the period ("a year") when it is there.
 - A company that owns shares is owner_kind "company". A natural person is "person".
 - Keep one ownership_links item for every ownership sentence, including sentences that contradict another document.
 - quote must be copied from that document, contiguous, no longer than 240 characters.
 - document and source_document must be the filename.
 """
+
+
+def _ground_named(documents: dict[str, str], items: list[dict] | None) -> list[dict]:
+    """Keep model rows whose quote actually appears in a pack document."""
+    kept = []
+    for item in items or []:
+        evidence = grounded_evidence(documents, [{"document": item.get("document"), "quote": item.get("quote")}])
+        if not evidence:
+            continue
+        item = dict(item)
+        item["document"] = evidence[0]["document"]
+        item["quote"] = evidence[0]["quote"]
+        item["evidence"] = evidence
+        kept.append(item)
+    return kept
 
 
 def grounded_evidence(documents: dict[str, str], items: list[dict] | None) -> list[dict]:
@@ -98,8 +120,15 @@ def with_narrative_control(documents: dict[str, str], links: list[dict]) -> list
     return links
 
 
+def _for_model(text: str, limit: int = 18000) -> str:
+    """Keep long filings, such as a scanned annual report, inside the model context."""
+    if len(text) <= limit:
+        return text
+    return text[:14000] + "\n\n[Middle of this long filing omitted.]\n\n" + text[-3000:]
+
+
 def extract_pack(documents: dict[str, str]) -> dict:
-    joined = "\n\n".join(f"FILENAME: {name}\n{text}" for name, text in documents.items())
+    joined = "\n\n".join(f"FILENAME: {name}\n{_for_model(text)}" for name, text in documents.items())
     messages = [
         {"role": "system", "content": EXTRACT_PROMPT},
         {"role": "user", "content": joined},
@@ -147,6 +176,8 @@ def extract_pack(documents: dict[str, str]) -> dict:
             item["source_document"] = evidence[0]["document"]
             kept_ids.append(item)
     data["identity_documents"] = kept_ids
+    data["funding_sources"] = _ground_named(documents, data.get("funding_sources"))
+    data["fund_events"] = _ground_named(documents, data.get("fund_events"))
     data["harvested_aliases"] = harvest_aliases(documents)
     data["ownership_links"] = with_narrative_control(documents, data.get("ownership_links") or [])
     return data

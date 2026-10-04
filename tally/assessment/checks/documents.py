@@ -5,7 +5,7 @@ from datetime import datetime
 
 from tally.assessment.findings import checklist_evidence, finding
 from tally.assessment.pack import ws
-from tally.registry import lookup_hong_kong
+from tally.registry import gleif_search, lookup_hong_kong
 from tally.screening import name_score
 
 
@@ -94,18 +94,22 @@ def check_documents(classified: list[dict], people: list[dict], extracted: dict,
 
 
 def check_registry(subject: str) -> tuple[dict, list[dict]]:
-    """Look the company up on the public Hong Kong registers. Returns the raw
-    lookup result and any finding it produces."""
+    """Look the company up on the public Hong Kong registers and GLEIF."""
     registry = lookup_hong_kong(subject)
+    gleif = gleif_search(subject)
+    registry = {**registry, "gleif": gleif}
     findings = []
     if registry.get("status") == "no_match":
+        lei_note = gleif.get("note") or ""
+        if gleif.get("status") == "no_match":
+            lei_note = "GLEIF returned no LEI for this name. " + lei_note
         findings.append(finding(
             "documents", "registry", f"No Hong Kong register record for {subject}",
-            "No matching live local company on the Companies Registry open-data name search, and no match on the HKMA register of authorized institutions. This is not ICRIS and not a BVI registry search.",
+            "No matching live local company on the Companies Registry open-data name search, and no match on the HKMA register of authorized institutions. This is not ICRIS. The British Virgin Islands has no public shareholder register, so offshore ownership is taken from the customer documents only. " + lei_note,
             "review", [{
                 "document": registry.get("source") or "Hong Kong public registers",
                 "quote": f"No record matched the legal name {subject}.",
-                "context": "Public Hong Kong Companies Registry open data and HKMA register of AIs.",
+                "context": "Public Hong Kong Companies Registry open data, HKMA register of AIs, and GLEIF. Not a BVI shareholder search.",
                 "verified": True,
                 "kind": "registry",
             }],
@@ -119,6 +123,24 @@ def check_registry(subject: str) -> tuple[dict, list[dict]]:
                 "document": registry.get("source") or "Hong Kong public registers",
                 "quote": f"{registry.get('legal_name')} · {extra} · {registry.get('address') or ''}".strip(" ·"),
                 "context": "Public Hong Kong register lookup.",
+                "verified": True,
+                "kind": "registry",
+            }],
+        ))
+    if gleif.get("status") == "match":
+        status = gleif.get("registration_status") or gleif.get("entity_status") or ""
+        findings.append(finding(
+            "documents", "lei", f"GLEIF LEI for {subject}",
+            (
+                f"GLEIF {gleif.get('lei')} · {gleif.get('legal_name')} · "
+                f"{gleif.get('jurisdiction') or gleif.get('country') or 'jurisdiction not stated'}"
+                + (f" · {status}" if status else "")
+                + f". {gleif.get('note')}"
+            ),
+            "low", [{
+                "document": "GLEIF",
+                "quote": f"{gleif.get('lei')} · {gleif.get('legal_name')}",
+                "context": gleif.get("note") or "GLEIF LEI index.",
                 "verified": True,
                 "kind": "registry",
             }],

@@ -5,16 +5,52 @@ from difflib import SequenceMatcher
 from pypinyin import lazy_pinyin
 
 SURNAME_VARIANTS = {
-    "li": ["lee"],
+    "li": ["lee", "lei"],
     "chen": ["chan", "tan"],
     "zhang": ["chang", "cheung"],
     "wang": ["wong"],
     "zhao": ["chao"],
-    "zhou": ["chow"],
-    "xu": ["hsu", "tsui"],
+    "zhou": ["chow", "chau"],
+    "xu": ["hsu", "tsui", "hui"],
     "liu": ["lau"],
     "wu": ["ng"],
     "huang": ["wong"],
+    "lin": ["lam"],
+    "liang": ["leung"],
+    "he": ["ho"],
+    "zheng": ["cheng"],
+    "luo": ["lo"],
+    "yang": ["yeung"],
+    "deng": ["tang"],
+    "xie": ["tse"],
+    "feng": ["fung"],
+    "zeng": ["tsang"],
+    "tan": ["tam"],
+    "cai": ["choi"],
+    "ye": ["yip"],
+    "yuan": ["yuen"],
+    "zhong": ["chung"],
+}
+
+# Common characters in Hong Kong names, spoken in Cantonese rather than Mandarin.
+CANTONESE = {
+    "陈": "chan", "陳": "chan", "李": "lei", "张": "cheung", "張": "cheung",
+    "王": "wong", "黄": "wong", "黃": "wong", "林": "lam", "吴": "ng", "吳": "ng",
+    "刘": "lau", "劉": "lau", "梁": "leung", "何": "ho", "郑": "cheng", "鄭": "cheng",
+    "罗": "lo", "羅": "lo", "周": "chau", "马": "ma", "馬": "ma", "胡": "wu",
+    "朱": "chu", "蔡": "choi", "杨": "yeung", "楊": "yeung", "许": "hui", "許": "hui",
+    "徐": "tsui", "邓": "tang", "鄧": "tang", "谢": "tse", "謝": "tse", "冯": "fung", "馮": "fung",
+    "曾": "tsang", "萧": "siu", "蕭": "siu", "潘": "poon", "谭": "tam", "譚": "tam",
+    "叶": "yip", "葉": "yip", "余": "yu", "苏": "so", "蘇": "so", "吕": "lui", "呂": "lui",
+    "钟": "chung", "鍾": "chung", "黎": "lai", "方": "fong", "任": "yam", "姚": "yiu",
+    "伟": "wai", "偉": "wai", "明": "ming", "文": "man", "华": "wa", "華": "wa",
+    "国": "gwok", "國": "gwok", "建": "gin", "志": "chi", "强": "keung", "強": "keung",
+    "丽": "lai", "麗": "lai", "芳": "fong", "俊": "chun", "浩": "ho", "欣": "yan",
+    "慧": "wai", "勇": "yung", "军": "kwan", "軍": "kwan", "平": "ping", "燕": "yin",
+    "玲": "ling", "敏": "man", "静": "ching", "靜": "ching", "娜": "na", "涛": "to", "濤": "to",
+    "鹏": "pang", "鵬": "pang", "超": "chiu", "磊": "lui", "洋": "yeung", "宇": "yu",
+    "博": "bok", "凯": "hoi", "凱": "hoi", "怡": "yi", "嘉": "ka", "颖": "wing", "穎": "wing",
+    "思": "si", "雨": "yu", "婷": "ting", "杰": "kit", "傑": "kit", "安": "on", "生": "sang",
 }
 
 
@@ -55,6 +91,11 @@ def name_forms(value: str) -> list[str]:
         add(" ".join(syllables))
         for alt in SURNAME_VARIANTS.get(syllables[0], []):
             add(" ".join([alt, *syllables[1:]]))
+        cantonese = [CANTONESE.get(char) for char in chunk]
+        if all(cantonese):
+            add(" ".join(cantonese))
+        elif cantonese[0]:
+            add(" ".join([cantonese[0], *syllables[1:]]))
     return forms
 
 

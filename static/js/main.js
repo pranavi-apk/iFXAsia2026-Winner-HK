@@ -1,9 +1,8 @@
 import { $ } from "./core/dom.js";
 import { api } from "./core/api.js";
 import { state } from "./core/state.js";
-import { mountCopilot, showCopilot } from "./components/copilot.js";
 import { mountPipelineModal, runWithPipeline } from "./components/pipeline-modal.js";
-import { mountSidebar, setActiveNav, setSampleDisabled } from "./components/sidebar.js";
+import { mountSidebar, setActiveNav } from "./components/sidebar.js";
 import { renderError, renderWelcome } from "./components/welcome.js";
 import { sectionById, sections } from "./sections/index.js";
 
@@ -14,9 +13,16 @@ function showWelcome() {
   renderWelcome(app, { onSample: openSample, onUpload: openUpload });
 }
 
+function setSidebar(open) {
+  document.body.classList.toggle("sidebar-open", open);
+  const toggle = $("#sidebar-toggle");
+  if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+}
+
 function showSection(id) {
   state.sectionId = id;
   setActiveNav(id);
+  document.querySelector(".main-wrapper")?.scrollTo(0, 0);
   if (!state.case) {
     // If user clicks a section before loading a case, auto-load sample demo case
     openSample();
@@ -28,18 +34,14 @@ function showSection(id) {
 function showCase(data) {
   state.case = data;
   history.replaceState(null, "", `/app?case=${data.id}`);
-  showCopilot();
   showSection(state.sectionId);
 }
 
 async function openCase(task) {
-  setSampleDisabled(true);
   try {
     showCase(await runWithPipeline(task));
   } catch (error) {
     renderError(app, error.message, { onBack: showWelcome });
-  } finally {
-    setSampleDisabled(false);
   }
 }
 
@@ -51,18 +53,24 @@ function openUpload(files) {
   return openCase(() => api.uploadCase(files));
 }
 
+$("#sidebar-toggle")?.addEventListener("click", () => {
+  setSidebar(!document.body.classList.contains("sidebar-open"));
+});
+$("#header-files")?.addEventListener("change", (event) => {
+  const files = Array.from(event.target.files || []);
+  event.target.value = "";
+  if (files.length) openUpload(files);
+});
+
 mountSidebar($("#sidebar"), {
   sections,
   activeId: state.sectionId,
   onSelect: showSection,
-  onSample: openSample,
-  onUpload: openUpload,
 });
 mountPipelineModal($("#overlays"));
-mountCopilot($("#overlays"));
 renderWelcome(app, { onSample: openSample, onUpload: openUpload });
 
-const savedCase = new URLSearchParams(location.search).get("case") || "harbour-lantern";
+const savedCase = new URLSearchParams(location.search).get("case") || "silver-oak";
 if (savedCase) {
   api.getCase(savedCase).then(showCase).catch(() => {
     openSample();

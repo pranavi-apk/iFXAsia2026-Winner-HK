@@ -1,14 +1,22 @@
 // Everything the Ownership screen shows comes from buildOwnershipView().
 //
-// It reads the intake (see mock/intake.js, which follows the bank's eight
-// requirement groups). A case from the backend can carry its own `intake` in
-// that shape; until it does, the mock intake is used. The owners, subsidiaries,
-// profile, documents and findings all come from there.
-import { MOCK_INTAKE } from "../../mock/intake.js";
+// It reads the case's intake, which the backend builds from the pack's PDFs
+// (tally/intake.py). The owners, subsidiaries, profile, documents and findings
+// all come from there.
 import { buildMapData } from "./map/data.js";
 
 const SHORT_DATE = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-const shortDate = (iso) => SHORT_DATE.format(new Date(iso));
+const shortDate = (iso) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? String(iso) : SHORT_DATE.format(date);
+};
+
+function countryOf(value) {
+  const text = String(value || "");
+  if (/british|england|wales|scotland|united kingdom|\buk\b/i.test(text)) return "United Kingdom";
+  return text;
+}
 
 // Documents that were handed over, as opposed to asked for or absent.
 const IN_PACK = new Set(["verified", "received", "stale", "expired"]);
@@ -27,8 +35,62 @@ function effectiveOwners(owners, share = 1) {
 const countEntities = (nodes) =>
   (nodes || []).reduce((sum, node) => sum + (node.kind === "person" ? 0 : 1) + countEntities(node.children), 0);
 
+function fromCase(caseData) {
+  const entity = caseData.entity || {};
+  const legalName = entity.legal_name || caseData.title || "Applicant";
+  const jurisdiction = countryOf(entity.jurisdiction);
+  const people = caseData.people || [];
+  const companies = (caseData.companies || []).filter((company) => company.name && company.name !== legalName);
+  const owners = people.map((person, index) => ({
+    id: `person-${index}`,
+    kind: "person",
+    name: person.name,
+    country: countryOf(person.nationality) || jurisdiction,
+    role: (person.roles || []).join(", ") || "Named in the pack",
+  }));
+  const subsidiaries = companies.map((company, index) => ({
+    id: `company-${index}`,
+    kind: "company",
+    name: company.name,
+    country: countryOf(company.jurisdiction) || jurisdiction,
+    role: "Named in the pack",
+  }));
+  const structure = {
+    applicant: { id: "applicant", name: legalName, country: jurisdiction, role: "Applicant" },
+    owners,
+    subsidiaries,
+  };
+  const map = buildMapData(structure);
+  const findings = (caseData.findings || []).filter((item) => item.module === "ownership" || /ownership|shareholder|ubo/i.test(item.title || ""));
+  const documents = caseData.documents || [];
+  return {
+    legalName,
+    jurisdiction,
+    companyType: "Company",
+    presence: map.stats,
+    map,
+    ubos: owners.map((owner) => ({ name: owner.name, country: owner.country, pct: null })),
+    structure,
+    info: [
+      { label: "Legal Name", value: legalName },
+      { label: "Entity Type", value: "Company" },
+      { label: "Jurisdiction", value: jurisdiction, flag: jurisdiction },
+      { label: "Registration Number", value: entity.company_number || "" },
+      { label: "Registered Address", value: entity.registered_address || "", small: true },
+    ],
+    sourceDocuments: documents.map((item) => item.filename),
+    keyFindings: findings.map((item) => ({ kind: item.severity === "low" ? "info" : "warning", title: item.title, sub: item.detail || "" })),
+    counts: {
+      related: owners.length + subsidiaries.length,
+      documents: documents.length,
+      findings: findings.length,
+    },
+  };
+}
+
 export function buildOwnershipView(caseData) {
-  const intake = caseData.intake || MOCK_INTAKE;
+  if (!caseData.intake) return fromCase(caseData);
+  const intake = caseData.intake;
   const { profile } = intake.company;
   const legalName = profile.legalName;
   const jurisdiction = profile.jurisdiction;

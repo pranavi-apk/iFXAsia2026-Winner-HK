@@ -10,6 +10,7 @@
     "sanctions_possible_match": 40,
     "pep_sample_match": 20,
     "high_risk_jurisdiction": 20,
+    "fatf_increased_monitoring": 8,
     "source_of_funds_inconsistency": 15,
     "registry_no_match": 8
   },
@@ -30,5 +31,10 @@
   "high_risk_jurisdictions": {
     "label": "Illustrative sample. Not the HKMA country-risk schedule.",
     "names": ["russia", "russian federation", "iran", "north korea", "syria", "myanmar"]
+  },
+  "severity_points": {
+    "high": 10,
+    "medium": 4,
+    "low": 1
   }
 }

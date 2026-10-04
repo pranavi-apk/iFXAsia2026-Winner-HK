@@ -22,6 +22,10 @@ def save(case: dict) -> dict:
     return case
 
 
+def stamp_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
 def load(case_id: str) -> dict:
     path = CASES / f"{case_id}.json"
     if not path.exists():

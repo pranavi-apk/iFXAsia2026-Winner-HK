@@ -1,5 +1,6 @@
 import { $, $$, escapeHtml } from "../../core/dom.js";
 import { api } from "../../core/api.js";
+import { state } from "../../core/state.js";
 import { pageHeader } from "../../components/page-header.js";
 import { icon } from "../../lib/icons.js";
 import { flagImg } from "../../lib/flags.js";
@@ -139,12 +140,13 @@ function renderOverviewTab(party) {
           </div>
         </div>
         <div class="matched-record-body${i === 0 && rec.match ? " open" : ""}" id="rec-body-${i}">
-          ${rec.match || rec.score > 0 ? snippet : "<p>No match found on this list.</p>"}
+          ${rec.match || rec.score > 0 ? snippet : (rec.snippet ? `<p>${escapeHtml(rec.snippet)}</p>` : "<p>No match found on this list.</p>")}
           <div class="matched-record-source">
             ${source}
             ${program}
           </div>
-          ${rec.match ? `<a class="view-source-link" href="#" target="_blank">${icon("external-link", 12)} View Original Source</a>` : ""}
+          ${rec.url ? `<a class="view-source-link" href="${escapeHtml(rec.url)}" target="_blank" rel="noopener">${icon("external-link", 12)} View source</a>` : ""}
+          ${rec.lead_id ? `<button type="button" class="btn-filter lead-dismiss" data-lead="${escapeHtml(rec.lead_id)}">Dismiss lead</button>` : ""}
         </div>
       </div>`;
   }).join("");
@@ -200,11 +202,11 @@ export default {
     container.innerHTML = `
       ${pageHeader({
         title: "Sanctions, PEP & Name Screening",
-        subtitle: "Automatically screen all individuals and entities in the case against global sanctions, PEP and adverse media lists.",
+        subtitle: "Hong Kong UN sanctions (CEDB and the Security Bureau), plus OFAC, EU and UK. OpenSanctions is an extra non-commercial file, not a production license. PEP is a labelled sample. Adverse media is a name-only web search.",
       })}
       <div class="sanctions-loading">
         <svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-        Running screening…
+        Screening the names and searching adverse media…
       </div>`;
 
     const caseId = caseData?.id;
@@ -239,8 +241,16 @@ function _render(container, caseData, data) {
     return `
       ${pageHeader({
         title: "Sanctions, PEP & Name Screening",
-        subtitle: "Automatically screen all individuals and entities in the case against global sanctions, PEP and adverse media lists.",
+        subtitle: "Hong Kong UN sanctions (CEDB and the Security Bureau), plus OFAC, EU and UK. OpenSanctions is an extra non-commercial file, not a production license. PEP is a labelled sample. Adverse media is a name-only web search.",
       })}
+
+      <div class="sanctions-actions" style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin:0.75rem 0;">
+        <input id="live-lookup-name" type="text" placeholder="Look up one name" style="padding:0.45rem 0.7rem;border:1px solid #cbd5e1;border-radius:8px;min-width:220px;" />
+        <button type="button" id="live-lookup-btn" class="btn-filter">Look up</button>
+        <button type="button" id="adverse-btn" class="btn-filter">Search again</button>
+        <span id="lookup-result" style="font-size:0.82rem;color:#475569;"></span>
+      </div>
+      <p style="font-size:0.78rem;color:#64748b;margin:0 0 0.75rem;">${escapeHtml(data.sources || "")} ${escapeHtml(data.pep_label || "")}</p>
 
       <!-- Stats bar -->
       <div class="sanctions-stats">
@@ -273,7 +283,7 @@ function _render(container, caseData, data) {
                 ${icon("search", 14)}
                 <input id="sanctions-search" type="text" placeholder="Search name or entity…" value="${escapeHtml(filter)}" />
               </div>
-              <button class="btn-filter">${icon("filter", 13)} Filter</button>
+              <button type="button" id="status-filter" class="btn-filter">${icon("filter", 13)} Filter</button>
             </div>
           </div>
           <div id="result-rows">${rows || `<div style="padding:2rem;text-align:center;color:#94a3b8;font-size:0.85rem;">No results match your search.</div>`}</div>
@@ -288,6 +298,59 @@ function _render(container, caseData, data) {
 
   container.innerHTML = buildHtml();
   _bindEvents(container, results);
+  _bindTools(container, caseData);
+}
+
+function _bindTools(container, caseData) {
+  const caseId = caseData?.id;
+  const lookupBtn = $("#live-lookup-btn", container);
+  const lookupInput = $("#live-lookup-name", container);
+  const result = $("#lookup-result", container);
+  lookupBtn?.addEventListener("click", () => {
+    const name = lookupInput?.value.trim();
+    if (!caseId || !name) return;
+    result.textContent = "Checking lists…";
+    api.liveLookup(caseId, name).then((payload) => {
+      if (payload.hit) {
+        const entry = payload.hit.entry || {};
+        result.textContent = `${payload.hit.candidate} on ${entry.source || "a public list"} (${Math.round(payload.hit.score * 100)}%).`;
+      } else if (payload.opensanctions) {
+        const entry = payload.opensanctions.entry || {};
+        result.textContent = `${payload.opensanctions.candidate} on OpenSanctions (${entry.dataset || entry.program || "aggregate"}, ${Math.round(payload.opensanctions.score * 100)}%). Non-commercial demo file, not the Hong Kong list.`;
+      } else if (payload.sample) {
+        result.textContent = `${payload.sample.candidate} on the sample list only (${Math.round(payload.sample.score * 100)}%).`;
+      } else {
+        result.textContent = `No list hit for ${name}.`;
+      }
+    }).catch((error) => {
+      result.textContent = error.message;
+    });
+  });
+  $("#adverse-btn", container)?.addEventListener("click", () => {
+    if (!caseId) return;
+    result.textContent = "Searching public mentions. Only names are sent…";
+    api.adverseMedia(caseId).then((saved) => {
+      state.case = saved;
+      api.getScreening(caseId).then((fresh) => _render(container, saved, fresh));
+    }).catch((error) => {
+      result.textContent = error.message;
+    });
+  });
+  $("#status-filter", container)?.addEventListener("click", (event) => {
+    const order = ["", "potential_match", "pep", "clear"];
+    const current = container.dataset.filter || "";
+    const next = order[(order.indexOf(current) + 1) % order.length];
+    container.dataset.filter = next;
+    event.currentTarget.lastChild.textContent = next ? ` ${next.replaceAll("_", " ")}` : " Filter";
+    $$(".result-row", container).forEach((row) => {
+      const status = row.querySelector(".status-badge")?.classList.contains("potential-match")
+        ? "potential_match"
+        : row.querySelector(".status-badge")?.classList.contains("pep")
+          ? "pep"
+          : "clear";
+      row.style.display = !next || status === next ? "" : "none";
+    });
+  });
 }
 
 function _bindEvents(container, results) {
@@ -347,13 +410,44 @@ function _bindDetailEvents(container, results, idx) {
       if (tabName === "overview") {
         body.innerHTML = renderOverviewTab(results[idx]);
         _bindRecordAccordion(detail);
+      } else if (tabName === "match-details") {
+        body.innerHTML = renderOverviewTab(results[idx]);
+        _bindRecordAccordion(detail);
+        _bindLeadButtons(detail);
+      } else if (tabName === "sources") {
+        const lines = (results[idx].matched_records || []).map((rec) =>
+          `<p><strong>${escapeHtml(rec.list)}</strong> ${escapeHtml(rec.source || "")} ${rec.url ? `<a href="${escapeHtml(rec.url)}" target="_blank" rel="noopener">${escapeHtml(rec.url)}</a>` : ""}</p>`
+        ).join("");
+        body.innerHTML = lines || "<p>No sources for this name.</p>";
       } else {
-        body.innerHTML = `<p style="color:#94a3b8;font-size:0.83rem;padding:0.5rem 0">${escapeHtml(tabName)} details coming soon.</p>`;
+        body.innerHTML = `<p style="color:#475569;font-size:0.85rem;">${escapeHtml(dataNote(results[idx]))}</p>`;
       }
     });
   });
 
   _bindRecordAccordion(detail);
+  _bindLeadButtons(detail);
+}
+
+function dataNote(party) {
+  const pep = (party.matched_records || []).some((rec) => rec.list === "Sample PEP list");
+  return pep
+    ? "This PEP hit is from the labelled sample list, not a licensed PEP database."
+    : "Confirm the list source on the Sources tab. Adverse-media rows are leads until you dismiss or keep them.";
+}
+
+function _bindLeadButtons(detail) {
+  $$(".lead-dismiss", detail).forEach((button) => {
+    button.addEventListener("click", () => {
+      const caseId = state.case?.id;
+      if (!caseId) return;
+      button.disabled = true;
+      api.decideLead(caseId, button.dataset.lead, "dismissed", "Officer dismissed this lead.").then((saved) => {
+        state.case = saved;
+        button.textContent = "Dismissed";
+      });
+    });
+  });
 }
 
 function _bindRecordAccordion(detail) {

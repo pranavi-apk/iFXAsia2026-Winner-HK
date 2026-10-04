@@ -48,7 +48,11 @@ export function renderWelcome(container, { onSample, onUpload }) {
     </div>`;
 
   container.querySelector("#hero-sample-btn").addEventListener("click", onSample);
-  container.querySelector("#hero-files").addEventListener("change", (e) => onUpload(e.target.files));
+  container.querySelector("#hero-files").addEventListener("change", (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+    if (files.length) onUpload(files);
+  });
 }
 
 export function renderError(container, message, { onBack }) {

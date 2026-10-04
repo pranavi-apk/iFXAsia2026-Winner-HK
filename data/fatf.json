@@ -1,0 +1,12 @@
+{
+  "source": "Wikipedia page 'Financial Action Task Force blacklist', which cites fatf-gafi.org. Retrieved 2026-10-04. The FATF site itself blocked a direct download.",
+  "blacklist_as_of": "2026-02-13",
+  "greylist_as_of": "2026-06-19",
+  "blacklist": ["iran", "north korea", "dprk", "myanmar", "burma"],
+  "increased_monitoring": [
+    "angola", "bolivia", "bulgaria", "cameroon", "cote d'ivoire", "côte d'ivoire", "ivory coast",
+    "democratic republic of the congo", "dr congo", "haiti", "kenya", "kuwait", "laos", "lao",
+    "lebanon", "monaco", "namibia", "nepal", "papua new guinea", "senegal", "south sudan",
+    "syria", "venezuela", "vietnam", "british virgin islands", "bvi", "virgin islands", "yemen"
+  ]
+}

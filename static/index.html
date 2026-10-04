@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tracy — AI Compliance Intelligence Platform</title>
+  <link rel="icon" href="/static/img/tracy_logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -11,12 +12,13 @@
   <!-- Styles: shared first, then per-section and per-component. Order matters. -->
   <link rel="stylesheet" href="/static/css/base.css" />
   <link rel="stylesheet" href="/static/css/layout.css" />
-  <link rel="stylesheet" href="/static/css/sections/ownership.css" />
+  <link rel="stylesheet" href="/static/css/sections/documents.css" />
+  <link rel="stylesheet" href="/static/css/sections/ownership.css?v=3" />
   <link rel="stylesheet" href="/static/css/sections/sanctions.css" />
   <link rel="stylesheet" href="/static/css/sections/source_of_funds.css" />
   <link rel="stylesheet" href="/static/css/sections/approval_memo.css" />
+  <link rel="stylesheet" href="/static/css/sections/risk-rating.css" />
   <link rel="stylesheet" href="/static/css/components/pipeline-modal.css" />
-  <link rel="stylesheet" href="/static/css/components/copilot.css" />
   <link rel="stylesheet" href="/static/css/components/welcome.css" />
 
   <!-- Libraries used by the ownership map (globals: L, topojson) -->
@@ -28,24 +30,36 @@
 </head>
 <body class="light-theme">
   <header class="tracy-header">
+    <div class="header-brand">
+      <button type="button" id="sidebar-toggle" class="sidebar-toggle" aria-label="Open sections" aria-expanded="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="4" y1="7" x2="20" y2="7"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
+      </button>
+      <img src="/static/img/tracy_logo.png" alt="Tracy Logo" class="tracy-logo-img" />
+    </div>
     <div class="header-container">
-      <div class="header-brand">
-        <img src="/static/img/tracy_logo.png" alt="Tracy Logo" class="tracy-logo-img" />
-        <span class="header-badge">AI Compliance Intelligence Platform</span>
-      </div>
+      <span class="header-badge">AI Compliance Intelligence Platform</span>
       <div class="header-right">
+        <label class="header-upload">
+          Upload pack
+          <input id="header-files" type="file" accept="application/pdf" multiple />
+        </label>
         <span class="system-status-pill"><span class="status-dot"></span> Live System</span>
       </div>
     </div>
   </header>
   <div class="app-layout">
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
     <aside id="sidebar" class="sidebar"></aside>
     <div class="main-wrapper">
       <main id="app" class="main-content"></main>
     </div>
   </div>
 
-  <!-- Pipeline modal and AI copilot are mounted here by js/main.js -->
+  <!-- The pipeline modal is mounted here by js/main.js -->
   <div id="overlays"></div>
 </body>
 </html>

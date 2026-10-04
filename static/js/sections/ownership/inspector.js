@@ -57,7 +57,7 @@ function ubosCard(view) {
           ${escapeHtml(u.name)}
         </div>
         <div style="display: flex; gap: 1rem; align-items: center;">
-          <span class="ubo-percent">${u.pct}%</span>
+          ${u.pct == null ? "" : `<span class="ubo-percent">${u.pct}%</span>`}
           <span style="font-size: 0.78rem; color: #64748b;">${escapeHtml(u.country)}</span>
         </div>
       </div>`
@@ -123,6 +123,10 @@ function findingsCard(view) {
     </div>`;
 }
 
-export function renderInspector(view) {
-  return profileCard(view) + ubosCard(view) + documentsCard(view) + findingsCard(view);
+export function renderFindings(view) {
+  return findingsCard(view);
+}
+
+export function renderDetails(view) {
+  return profileCard(view) + ubosCard(view) + documentsCard(view);
 }

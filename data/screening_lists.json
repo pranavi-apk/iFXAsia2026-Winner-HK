@@ -10,7 +10,8 @@
   "pep": {
     "label": "Illustrative sample. Not a licensed PEP database and not an HKMA or SFC register.",
     "entries": [
-      {"name": "Patrick Lam", "aliases": [], "role": "Sample entry: former municipal councillor"}
+      {"name": "Patrick Lam", "aliases": [], "role": "Sample entry: former municipal councillor"},
+      {"name": "Chen Xiao Lin", "aliases": [], "role": "Sample entry: former district council adviser"}
     ]
   }
 }

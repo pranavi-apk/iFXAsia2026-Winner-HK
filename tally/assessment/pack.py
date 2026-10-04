@@ -1,8 +1,11 @@
 """Reading the onboarding pack: PDF text, document types, and quote lookup."""
 import re
 from difflib import SequenceMatcher
+from pathlib import Path
 
 from pypdf import PdfReader
+
+from tally.ocr import read_pages
 
 HEADINGS = [
     ("certificate_of_incorporation", ("CERTIFICATE OF INCORPORATION",)),
@@ -17,7 +20,10 @@ HEADINGS = [
 
 def read_pdf(path) -> str:
     reader = PdfReader(str(path))
-    return "\n".join((page.extract_text() or "") for page in reader.pages).strip()
+    embedded = [(page.extract_text() or "") for page in reader.pages]
+    if embedded and all(len(text.strip()) >= 40 for text in embedded):
+        return "\n\n".join(text.strip() for text in embedded).strip()
+    return read_pages(Path(path), embedded)
 
 
 def ws(value: str) -> str:

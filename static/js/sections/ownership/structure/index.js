@@ -27,7 +27,7 @@ function nodeHtml(entry) {
   const { node, cx, y, isRoot } = entry;
   const isPerson = node.kind === "person";
   const iconHtml = isPerson ? icon("user", 20) : icon(isRoot ? "buildingFull" : "building", isRoot ? 20 : 18);
-  const second = isPerson ? `<strong>${node.pct}%</strong>` : escapeHtml(node.role);
+  const second = isPerson && node.pct != null ? `<strong>${node.pct}%</strong>` : escapeHtml(node.role || "");
   const rootStyle = isRoot ? "border: 2px solid #2563eb; background: #faf5ff;" : "";
   const iconStyle = isRoot ? ' style="background: #eff6ff; color: #2563eb;"' : "";
   return `
@@ -51,7 +51,7 @@ function worldHtml(layout) {
   const paths = layout.edges.map((e) => `<path d="${edgePath(e)}" marker-end="url(#tree-arrow)" />`).join("");
   const pills = layout.edges
     .filter((e) => e.pct != null)
-    .map((e) => `<span class="tree-edge-pill" style="left:${e.to.x}px; top:${e.to.y - 22}px;">${e.pct}%</span>`)
+    .map((e) => `<span class="tree-edge-pill" style="left:${e.pillAt.x}px; top:${e.pillAt.y}px;">${e.pct}%</span>`)
     .join("");
   const toggles = layout.toggles
     .map(

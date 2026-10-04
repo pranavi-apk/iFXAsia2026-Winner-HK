@@ -9,6 +9,7 @@ from tally.assessment.checks.ownership import check_ownership
 from tally.assessment.checks.screening import check_introducer, check_jurisdiction, screen_parties
 from tally.assessment.checks.source_of_funds import check_source_of_funds
 from tally.assessment.extraction import extract_pack
+from tally.assessment.funds import build_funds_profile
 from tally.assessment.memo import draft_memo
 from tally.assessment.monitoring import initial_monitoring
 from tally.assessment.pack import classify
@@ -48,7 +49,7 @@ def assess(documents: dict[str, str]) -> dict:
     findings += ownership_findings
     screened, screening_findings = screen_parties(people, companies, policy, lists)
     findings += screening_findings
-    findings += check_jurisdiction(people, policy)
+    findings += check_jurisdiction(people, policy, extracted.get("entity") or {})
     findings += check_source_of_funds(business)
     findings += check_introducer(business, policy, lists)
     registry, registry_findings = check_registry(subject)
@@ -63,6 +64,16 @@ def assess(documents: dict[str, str]) -> dict:
         if item["code"] in OUTSTANDING_CODES or item["code"] in required_types or "Missing" in item["title"]
     ]
     memo, request = draft_memo(subject, findings, rating, outstanding)
+    funds = build_funds_profile(
+        documents,
+        business,
+        extracted.get("entity") or {},
+        classified,
+        findings,
+        companies,
+        extracted.get("funding_sources") or [],
+        extracted.get("fund_events") or [],
+    )
 
     return {
         "entity": extracted.get("entity") or {"legal_name": subject},
@@ -72,6 +83,7 @@ def assess(documents: dict[str, str]) -> dict:
         "ownership_views": views,
         "screening": screened,
         "business": {key: value for key, value in business.items() if key != "evidence"},
+        "funds": funds,
         "findings": findings,
         "modules": {
             "documents": {"title": "Entity and documents", "status": _module_status(findings, "documents")},

@@ -1,11 +1,17 @@
-"""Hong Kong targeted financial sanctions.
+"""Sanctions lists used for screening.
 
 Hong Kong implements UN designations under the United Nations Sanctions
-Ordinance (Cap. 537) and UNATMO (Cap. 575). CEDB publishes those lists as
-PDFs; the machine-readable source is the UN consolidated XML, which is the
-same set of names. OFAC, EU, and UK lists are not used.
+Ordinance (Cap. 537, published by CEDB) and UNATMO (Cap. 575, published by
+the Security Bureau). The machine-readable copy of that set is the UN
+consolidated XML.
+
+OFAC, the EU list, and the UK list are not required by Hong Kong law. They
+are included because many banks screen them as well, and only when the
+cached files are already on disk.
 """
 
+import csv
+import io
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
@@ -66,10 +72,99 @@ def _parse_un() -> list[dict]:
                     entries.append({
                         "name": full,
                         "aliases": aliases[:8],
-                        "source": HK_SOURCE,
-                        "program": program,
+                    "source": HK_SOURCE,
+                    "program": program,
+                    "list_url": "https://www.cedb.gov.hk/en/policies/united-nations-security-council-sanctions.html",
                     })
                 parts, aliases, program = [], [], "UN"
+                elem.clear()
+    except ET.ParseError:
+        return entries
+    return entries
+
+
+def _parse_ofac() -> list[dict]:
+    sdn = CACHE / "sdn.csv"
+    if not sdn.exists() or sdn.stat().st_size < 1000:
+        return []
+    by_id: dict[str, dict] = {}
+    with sdn.open(newline="", encoding="utf-8", errors="replace") as handle:
+        for row in csv.reader(handle):
+            if len(row) < 4 or not row[1] or row[1].strip() in {"-0-", ""}:
+                continue
+            by_id[row[0]] = {
+                "name": row[1].strip(),
+                "aliases": [],
+                "source": "OFAC SDN",
+                "program": row[3].strip(),
+                "list_url": "https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists",
+            }
+    alt = CACHE / "alt.csv"
+    if alt.exists():
+        with alt.open(newline="", encoding="utf-8", errors="replace") as handle:
+            for row in csv.reader(handle):
+                if len(row) < 4 or row[0] not in by_id:
+                    continue
+                alias = row[3].strip()
+                if alias and alias != "-0-" and len(by_id[row[0]]["aliases"]) < 6:
+                    by_id[row[0]]["aliases"].append(alias)
+    return list(by_id.values())
+
+
+def _parse_uk() -> list[dict]:
+    path = CACHE / "uk.csv"
+    if not path.exists() or path.stat().st_size < 1000:
+        return []
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if text.startswith("Last Updated"):
+        text = text.split("\n", 1)[1]
+    grouped: dict[str, dict] = {}
+    for row in csv.DictReader(io.StringIO(text)):
+        parts = [(row.get(f"Name {index}") or "").strip() for index in range(1, 7)]
+        parts = [part for part in parts if part]
+        if not parts:
+            continue
+        key = (row.get("Group ID") or " ".join(parts)).strip()
+        alias = (row.get("Name Non-Latin Script") or "").strip()
+        entry = grouped.setdefault(key, {
+            "name": " ".join(parts),
+            "aliases": [],
+            "source": "UK sanctions list",
+            "program": (row.get("Regime") or "UK").strip(),
+            "list_url": "https://www.gov.uk/government/publications/the-uk-sanctions-list",
+        })
+        if alias and alias not in entry["aliases"] and len(entry["aliases"]) < 6:
+            entry["aliases"].append(alias)
+    return list(grouped.values())
+
+
+def _parse_eu() -> list[dict]:
+    path = CACHE / "eu.xml"
+    if not path.exists() or path.stat().st_size < 1000:
+        return []
+    entries = []
+    names: list[str] = []
+    program = "EU"
+    try:
+        for _event, elem in ET.iterparse(path, events=("end",)):
+            tag = _local(elem.tag)
+            if tag == "regulation":
+                program = (elem.attrib.get("programme") or program).strip() or program
+            elif tag == "namealias":
+                whole = (elem.attrib.get("wholeName") or "").strip()
+                if whole and whole not in names and len(names) < 6:
+                    names.append(whole)
+            elif tag == "sanctionentity":
+                if names:
+                    entries.append({
+                        "name": names[0],
+                        "aliases": names[1:],
+                        "source": "EU financial sanctions list",
+                        "program": program,
+                        "list_url": "https://www.sanctionsmap.eu/",
+                    })
+                names = []
+                program = "EU"
                 elem.clear()
     except ET.ParseError:
         return entries
@@ -81,7 +176,9 @@ def load_index(refresh: bool = False) -> dict:
     if _INDEX is not None and not refresh:
         return _INDEX
     notes = _download()
-    entries = _parse_un()
+    core = _parse_un()
+    extras = _parse_ofac() + _parse_uk() + _parse_eu()
+    entries = core + extras
     token_map: dict[str, list[int]] = {}
     for index, entry in enumerate(entries):
         seen = set()
@@ -100,9 +197,10 @@ def load_index(refresh: bool = False) -> dict:
         "fetched_at": datetime.now(timezone.utc).isoformat(),
         "files": notes,
         "summary": (
-            f"{HK_SOURCE}: {len(entries)} names from the UN consolidated list "
-            f"as implemented in Hong Kong. CEDB publishes the same designations. "
-            "Sample list is separate."
+            f"Hong Kong core ({HK_SOURCE}): {len(core)} names from the UN consolidated list. "
+            f"CEDB publishes the UNSO lists and the Security Bureau publishes the UNATMO list. "
+            f"Extra lists banks often also screen: {len(extras)} OFAC, EU, and UK names. "
+            "The sample sanctions list and the sample PEP list are separate."
         ),
     }
     return _INDEX
@@ -133,4 +231,6 @@ def screen_public(forms: list[str], threshold: float = 0.92) -> dict | None:
 
 
 def sanctions_summary() -> str:
-    return load_index()["summary"]
+    from tally.opensanctions import opensanctions_summary
+
+    return load_index()["summary"] + " " + opensanctions_summary()

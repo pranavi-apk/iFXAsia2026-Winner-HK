@@ -12,6 +12,7 @@ POINTS_KEY = {
     "pep": "pep_sample_match",
     "pep-introducer": "pep_sample_match",
     "jurisdiction": "high_risk_jurisdiction",
+    "fatf-monitoring": "fatf_increased_monitoring",
     "mismatch": "source_of_funds_inconsistency",
     "registry": "registry_no_match",
 }

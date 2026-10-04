@@ -1,0 +1,218 @@
+{
+  "label": "Illustrative sample checklist, following the bank's eight onboarding requirement groups.",
+  "max_age_months": 3,
+  "groups": [
+    {
+      "key": "company",
+      "title": "The company itself",
+      "items": [
+        {
+          "id": "certificate-of-incorporation",
+          "title": "Certificate of Incorporation"
+        },
+        {
+          "id": "certificate-of-change-of-name",
+          "title": "Certificate of Change of Name"
+        },
+        {
+          "id": "business-registration-certificate",
+          "title": "Business Registration Certificate (Hong Kong)"
+        },
+        {
+          "id": "memorandum-and-articles",
+          "title": "Memorandum & Articles of Association"
+        },
+        {
+          "id": "registry-extract",
+          "title": "Company registry extract"
+        },
+        {
+          "id": "certificate-of-incumbency",
+          "title": "Certificate of Incumbency"
+        }
+      ]
+    },
+    {
+      "key": "management",
+      "title": "Who runs it",
+      "items": [
+        {
+          "id": "register-of-directors",
+          "title": "Register of Directors and Company Secretary"
+        },
+        {
+          "id": "board-resolution",
+          "title": "Board resolution authorizing the account"
+        },
+        {
+          "id": "id-zhang-wei",
+          "title": "Passport: Zhang Wei"
+        },
+        {
+          "id": "id-liu-mei",
+          "title": "Passport: Liu Mei"
+        },
+        {
+          "id": "id-chen-xiaolin",
+          "title": "HKID: Chen Xiaolin"
+        },
+        {
+          "id": "address-zhang-wei",
+          "title": "Proof of residential address: Zhang Wei"
+        },
+        {
+          "id": "address-liu-mei",
+          "title": "Proof of residential address: Liu Mei"
+        },
+        {
+          "id": "address-chen-xiaolin",
+          "title": "Proof of residential address: Chen Xiaolin"
+        }
+      ]
+    },
+    {
+      "key": "ownership",
+      "title": "Who owns and controls it",
+      "items": [
+        {
+          "id": "register-of-members",
+          "title": "Register of Members (shareholders)"
+        },
+        {
+          "id": "structure-chart",
+          "title": "Ownership structure chart"
+        },
+        {
+          "id": "jade-crest-constitution",
+          "title": "Jade Crest Holdings Pte Ltd: constitution"
+        },
+        {
+          "id": "jade-crest-register",
+          "title": "Jade Crest Holdings Pte Ltd: register of members"
+        },
+        {
+          "id": "voting-proxy",
+          "title": "Voting proxy agreement (Jade Crest shares)"
+        }
+      ]
+    },
+    {
+      "key": "business",
+      "title": "What the business does",
+      "items": [
+        {
+          "id": "business-description",
+          "title": "Description of business activities"
+        },
+        {
+          "id": "audited-accounts",
+          "title": "Audited financial statements FY2025"
+        },
+        {
+          "id": "website",
+          "title": "Company website"
+        },
+        {
+          "id": "sample-contracts",
+          "title": "Sample supply contract and invoices"
+        },
+        {
+          "id": "regulatory-licence",
+          "title": "Regulatory licence"
+        }
+      ]
+    },
+    {
+      "key": "funds",
+      "title": "Source of funds and expected activity",
+      "items": [
+        {
+          "id": "sof-statement",
+          "title": "Source of funds statement"
+        },
+        {
+          "id": "sow-zhang-wei",
+          "title": "Source of wealth evidence: Zhang Wei (share sale agreement)"
+        },
+        {
+          "id": "sow-liu-mei",
+          "title": "Source of wealth evidence: Liu Mei"
+        },
+        {
+          "id": "expected-activity",
+          "title": "Expected activity declaration"
+        },
+        {
+          "id": "bank-statements-other",
+          "title": "Bank statements from another bank (6 months)"
+        }
+      ]
+    },
+    {
+      "key": "presence",
+      "title": "Address and presence",
+      "items": [
+        {
+          "id": "proof-registered-office",
+          "title": "Proof of registered office"
+        },
+        {
+          "id": "proof-business-address",
+          "title": "Proof of business address"
+        },
+        {
+          "id": "evidence-operations",
+          "title": "Evidence of real operations"
+        }
+      ]
+    },
+    {
+      "key": "declarations",
+      "title": "Tax and declarations",
+      "items": [
+        {
+          "id": "crs-entity",
+          "title": "FATCA / CRS self-certification: entity"
+        },
+        {
+          "id": "crs-zhang-wei",
+          "title": "CRS self-certification: Zhang Wei"
+        },
+        {
+          "id": "crs-liu-mei",
+          "title": "CRS self-certification: Liu Mei"
+        },
+        {
+          "id": "pep-declaration",
+          "title": "PEP declaration (all directors and owners)"
+        },
+        {
+          "id": "sanctions-declaration",
+          "title": "Sanctions exposure declaration"
+        }
+      ]
+    },
+    {
+      "key": "verification",
+      "title": "Interaction and verification",
+      "items": [
+        {
+          "id": "certified-copies",
+          "title": "Certified copies of key documents"
+        },
+        {
+          "id": "apostille",
+          "title": "Apostille (foreign company documents)"
+        },
+        {
+          "id": "interviews",
+          "title": "Director interviews"
+        },
+        {
+          "id": "translations",
+          "title": "Translations into English"
+        }
+      ]
+    }
+  ]
+}
