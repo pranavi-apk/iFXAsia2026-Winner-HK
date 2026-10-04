@@ -13,7 +13,7 @@ export function renderWelcome(container, { onSample, onUpload }) {
       <div class="hero-content">
         <div class="hero-badge">⚡ Autonomous KYC Workspace</div>
         <h1>Ownership & Control Intelligence</h1>
-        <p>Select a compliance case to disentangle UBO structures, screen live Sanctions & PEP lists, and interact with the AI Copilot.</p>
+        <p>Select a compliance case to disentangle UBO structures and screen live Sanctions & PEP lists.</p>
 
         <div class="hero-cta">
           <button id="hero-sample-btn" class="btn btn-primary btn-lg shadow-glow">

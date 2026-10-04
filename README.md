@@ -28,7 +28,7 @@ static/                     frontend, plain ES modules, no build step
   js/
     main.js                 start-up and wiring
     core/                   api calls, shared state, DOM helpers
-    components/             sidebar, pipeline modal, copilot, welcome, page header
+    components/             sidebar, pipeline modal, welcome, page header
     sections/               one folder per sidebar section; index.js lists them
       ownership/            the only built section: map, inspector, view-model.js,
                             and structure/ (the pannable ownership canvas)

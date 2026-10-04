@@ -2,9 +2,9 @@
 from fastapi import APIRouter, HTTPException
 
 from tally.api.deps import load_case
-from tally.api.schemas import Decision, FindingDecision
+from tally.api.schemas import Decision, FindingDecision, MemoDraft
 from tally.assessment import apply_risk
-from tally.store import append_audit, save
+from tally.store import append_audit, save, stamp_now
 
 router = APIRouter(prefix="/api/cases/{case_id}", tags=["review"])
 
@@ -16,6 +16,17 @@ def decide(case_id: str, body: Decision):
         raise HTTPException(status_code=400, detail="Status must be approved, returned, or overridden.")
     case["decision"] = body.model_dump()
     append_audit(case, "case_decision", f"Officer set status to {body.status}, rating {body.rating or 'unchanged'}. {body.note}".strip())
+    return save(case)
+
+
+@router.post("/memo")
+def save_memo(case_id: str, body: MemoDraft):
+    """Keep the officer's memo draft: the recommendation they chose and the text they wrote."""
+    if body.recommendation not in {"Conditional Approval", "Approve", "Reject"}:
+        raise HTTPException(status_code=400, detail="Recommendation must be Conditional Approval, Approve, or Reject.")
+    case = load_case(case_id)
+    case["memo_draft"] = {**body.model_dump(), "saved_at": stamp_now()}
+    append_audit(case, "memo_draft", f"Officer saved the approval memo draft: {body.recommendation}.")
     return save(case)
 
 

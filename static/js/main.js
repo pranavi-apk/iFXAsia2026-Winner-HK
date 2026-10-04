@@ -1,7 +1,6 @@
 import { $ } from "./core/dom.js";
 import { api } from "./core/api.js";
 import { state } from "./core/state.js";
-import { mountCopilot, showCopilot } from "./components/copilot.js";
 import { mountPipelineModal, runWithPipeline } from "./components/pipeline-modal.js";
 import { mountSidebar, setActiveNav, setSampleDisabled } from "./components/sidebar.js";
 import { renderError, renderWelcome } from "./components/welcome.js";
@@ -28,7 +27,6 @@ function showSection(id) {
 function showCase(data) {
   state.case = data;
   history.replaceState(null, "", `/app?case=${data.id}`);
-  showCopilot();
   showSection(state.sectionId);
 }
 
@@ -59,7 +57,6 @@ mountSidebar($("#sidebar"), {
   onUpload: openUpload,
 });
 mountPipelineModal($("#overlays"));
-mountCopilot($("#overlays"));
 renderWelcome(app, { onSample: openSample, onUpload: openUpload });
 
 const savedCase = new URLSearchParams(location.search).get("case") || "silver-oak";

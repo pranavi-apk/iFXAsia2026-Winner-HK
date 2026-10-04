@@ -22,7 +22,7 @@ GROUP_SECTION = {
     "company": "documents", "management": "documents", "presence": "documents", "verification": "documents",
     "ownership": "ownership", "business": "source-of-funds", "funds": "source-of-funds", "declarations": "sanctions",
 }
-STATUS_LABEL = {"missing": "is missing", "expired": "has expired", "stale": "is out of date", "pending": "is still pending"}
+STATUS_LABEL = {"missing": "Missing", "expired": "Expired", "stale": "Out of date", "pending": "Pending"}
 FINDING_SEVERITY = {"missing": "high", "expired": "high", "stale": "medium", "pending": "medium"}
 
 
@@ -204,7 +204,7 @@ def _findings(intake: dict) -> list[dict]:
         for item in intake[group]["documents"]:
             if item["status"] in STATUS_LABEL:
                 sub = item.get("note", "")
-                found.append(_finding(group, item["id"], FINDING_SEVERITY[item["status"]], f"{item['title']} {STATUS_LABEL[item['status']]}", sub))
+                found.append(_finding(group, item["id"], FINDING_SEVERITY[item["status"]], f"{STATUS_LABEL[item['status']]}: {item['title']}", sub))
     for control in intake["ownership"]["controlByOtherMeans"]:
         found.append(_finding("ownership", "control-" + control["kind"].lower().replace(" ", "-"), "medium",
                               f"{control['holder']} holds a {control['kind'].lower()}", control["detail"]))
@@ -226,6 +226,14 @@ def _findings(intake: dict) -> list[dict]:
                               f"{country} is expected but absent from the last 6 months of statements."))
     order = {"high": 0, "medium": 1, "low": 2}
     return sorted(found, key=lambda item: order[item["severity"]])
+
+
+def _risk(findings: list[dict], policy: dict) -> dict:
+    """Score from the findings: each finding adds points by severity. The bands are in data/rules.json."""
+    counts = {level: sum(1 for item in findings if item["severity"] == level) for level in policy["severity_points"]}
+    score = min(100, sum(policy["severity_points"][level] * count for level, count in counts.items()))
+    rating = next(band["rating"] for band in policy["bands"] if score <= band["max"])
+    return {"score": score, "rating": rating, "counts": counts, "rules_label": policy["label"]}
 
 
 # ------------------------------------------------------------------ the whole pack
@@ -383,6 +391,7 @@ def build_intake(texts: dict[str, str]) -> dict:
     parties += [(n, "person") for n in dict.fromkeys([*people_register.values(), *(b["name"] for b in intake["ownership"]["beneficialOwners"])])]
     intake["screening"] = [_screen(name, kind, policy, lists, declared_pep) for name, kind in parties]
     intake["findings"] = _findings(intake)
+    intake["risk"] = _risk(intake["findings"], policy)
     return intake
 
 

@@ -14,3 +14,10 @@ class FindingDecision(BaseModel):
 
 class ChatMessage(BaseModel):
     prompt: str
+
+
+class MemoDraft(BaseModel):
+    recommendation: str
+    summary: str = ""
+    analyst_comments: str = ""
+    decision_text: str = ""

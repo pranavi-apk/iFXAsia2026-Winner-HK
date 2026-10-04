@@ -29,6 +29,10 @@ def load(case_id: str) -> dict:
     return json.loads(path.read_text())
 
 
+def stamp_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
 def append_audit(case: dict, action: str, detail: str) -> None:
     case.setdefault("audit", []).append({
         "at": datetime.now(timezone.utc).isoformat(),

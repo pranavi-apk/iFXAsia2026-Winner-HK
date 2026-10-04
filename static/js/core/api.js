@@ -24,6 +24,13 @@ export const api = {
       body: JSON.stringify({ name }),
     }),
 
+  saveMemo: (id, draft) =>
+    request(`/api/cases/${encodeURIComponent(id)}/memo`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(draft),
+    }),
+
   chat: (id, prompt) =>
     request(`/api/cases/${encodeURIComponent(id)}/chat`, {
       method: "POST",

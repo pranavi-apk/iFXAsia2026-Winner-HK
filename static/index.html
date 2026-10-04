@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tracy — AI Compliance Intelligence Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
 
   <!-- Styles: shared first, then per-section and per-component. Order matters. -->
   <link rel="stylesheet" href="/static/css/base.css" />
@@ -17,7 +20,6 @@
   <link rel="stylesheet" href="/static/css/sections/source_of_funds.css" />
   <link rel="stylesheet" href="/static/css/sections/approval_memo.css" />
   <link rel="stylesheet" href="/static/css/components/pipeline-modal.css" />
-  <link rel="stylesheet" href="/static/css/components/copilot.css" />
   <link rel="stylesheet" href="/static/css/components/welcome.css" />
 
   <!-- Libraries used by the ownership map (globals: L, topojson) -->
@@ -27,6 +29,7 @@
 
   <script type="module" src="/static/js/main.js"></script>
 </head>
+
 <body class="light-theme">
   <header class="tracy-header">
     <div class="header-container">
@@ -34,9 +37,7 @@
         <img src="/static/img/tracy_logo.png" alt="Tracy Logo" class="tracy-logo-img" />
         <span class="header-badge">AI Compliance Intelligence Platform</span>
       </div>
-      <div class="header-right">
-        <span class="system-status-pill"><span class="status-dot"></span> Live System</span>
-      </div>
+
     </div>
   </header>
   <div class="app-layout">
@@ -46,7 +47,8 @@
     </div>
   </div>
 
-  <!-- Pipeline modal and AI copilot are mounted here by js/main.js -->
+  <!-- The pipeline modal is mounted here by js/main.js -->
   <div id="overlays"></div>
 </body>
+
 </html>
