@@ -15,6 +15,14 @@ export const api = {
 
   getCase: (id) => request(`/api/cases/${encodeURIComponent(id)}`),
 
+  riskRating: (id) => request(`/api/cases/${encodeURIComponent(id)}/risk-rating`),
+
+  async riskReport(id) {
+    const response = await fetch(`/api/cases/${encodeURIComponent(id)}/risk-rating/report`);
+    if (!response.ok) throw new Error(await response.text());
+    return response.blob();
+  },
+
   chat: (id, prompt) =>
     request(`/api/cases/${encodeURIComponent(id)}/chat`, {
       method: "POST",

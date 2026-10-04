@@ -2,11 +2,12 @@
 from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pypdf import PdfReader
 
 from tally.api.deps import load_case
 from tally.assessment import assess, read_pdf
+from tally.assessment.risk_rating import build_risk_rating
 from tally.demo_pack import write_sample
 from tally.store import case_dir, new_id, stamp
 
@@ -52,6 +53,27 @@ async def create_case(files: list[UploadFile] = File(...)):
 @router.get("/{case_id}")
 def get_case(case_id: str):
     return load_case(case_id)
+
+
+@router.get("/{case_id}/risk-rating")
+def get_risk_rating(case_id: str):
+    case = load_case(case_id)
+    return build_risk_rating(case, case_dir(case_id))
+
+
+@router.get("/{case_id}/risk-rating/report")
+def get_risk_report(case_id: str):
+    case = load_case(case_id)
+    try:
+        from tally.assessment.risk_report import build_report
+    except ImportError:
+        raise HTTPException(status_code=503, detail="Report generation needs reportlab: pip install -r requirements.txt") from None
+    pdf = build_report(case, build_risk_rating(case, case_dir(case_id)))
+    return Response(
+        pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="Tracy_Risk_Report_{case_id}.pdf"'},
+    )
 
 
 @router.get("/{case_id}/files/{filename}")
