@@ -9,7 +9,7 @@ export default {
 
   mount(container, caseData) {
     const totalFunds = caseData?.business?.turnover || "USD 5.0M";
-    const entityName = caseData?.id === "harbour-lantern" ? "Silver Oak Holdings Ltd" : (caseData?.id || "Silver Oak Holdings Ltd");
+    const entityName = caseData?.title || "Silver Oak Holdings Ltd";
 
     container.innerHTML = `
       ${pageHeader({

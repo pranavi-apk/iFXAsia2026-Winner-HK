@@ -8,7 +8,7 @@ export default {
   done: true,
 
   mount(container, caseData) {
-    const entityName = caseData?.id === "harbour-lantern" ? "Maple Finance Pte Ltd / Silver Oak Holdings Ltd" : (caseData?.id || "Maple Finance Pte Ltd");
+    const entityName = caseData?.title || "Maple Finance Pte Ltd";
 
     container.innerHTML = `
       ${pageHeader({

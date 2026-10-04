@@ -1,4 +1,5 @@
 """Opening cases and reading them back."""
+import shutil
 from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
@@ -7,7 +8,8 @@ from pypdf import PdfReader
 
 from tally.api.deps import load_case
 from tally.assessment import assess, read_pdf
-from tally.demo_pack import write_sample
+from tally.intake import build_intake, pack_documents
+from tally.mock_pack import PACK_DIR, write_pack
 from tally.store import case_dir, new_id, stamp
 
 router = APIRouter(prefix="/api/cases", tags=["cases"])
@@ -22,16 +24,37 @@ def _texts(folder: Path) -> dict[str, str]:
     return documents
 
 
+SAMPLE_ID = "silver-oak"
+
+
 @router.post("/sample")
 def sample_case():
-    case_id = "harbour-lantern"
-    folder = case_dir(case_id)
+    """Open the mock Silver Oak pack. The PDFs in demo/silver-oak-pack are read in code, with no model call."""
+    if not any(PACK_DIR.glob("*.pdf")):
+        write_pack()
+    folder = case_dir(SAMPLE_ID)
     for old in folder.glob("*.pdf"):
         old.unlink()
-    write_sample(folder)
-    assessment = assess(_texts(folder))
-    title = (assessment.get("entity") or {}).get("legal_name") or "Harbour Lantern Trading Limited"
-    return stamp(case_id, title, assessment)
+    for path in PACK_DIR.glob("*.pdf"):
+        shutil.copy(path, folder / path.name)
+    texts = _texts(folder)
+    intake = build_intake(texts)
+    profile = intake["company"]["profile"]
+    pages = {path.name: len(PdfReader(str(path)).pages) for path in folder.glob("*.pdf")}
+    assessment = {
+        "entity": {
+            "legal_name": profile["legalName"], "company_number": profile["registrationNumber"],
+            "jurisdiction": profile["jurisdiction"], "registered_address": profile["registeredOffice"],
+        },
+        "people": [{"name": d["name"], "kind": "person", "roles": [d["role"].lower()], "nationality": d["nationality"]}
+                   for d in intake["management"]["directors"]],
+        "companies": [{"name": row["name"], "kind": "company"} for row in intake["screening"] if row["kind"] == "company"],
+        "documents": pack_documents(texts, pages, intake),
+        "findings": intake["findings"],
+        "business": {"turnover": f"USD {intake['business']['financialStatements']['turnoverUsd'] / 1_000_000:.1f}M"},
+        "intake": intake,
+    }
+    return stamp(SAMPLE_ID, profile["legalName"], assessment)
 
 
 @router.post("")

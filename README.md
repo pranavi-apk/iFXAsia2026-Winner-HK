@@ -13,7 +13,7 @@ pip install -r requirements.txt
 uvicorn tally.main:app --reload --port 8080
 ```
 
-Open http://localhost:8080 and choose **Open sample case**. The sample company is invented.
+Open http://localhost:8080 and choose **Open sample case**. The sample company, Silver Oak Holdings Ltd, is invented. Its pack is the PDFs in `demo/demo-docs/silver-oak-pack/`, read in code with no model call. To change the sample, edit `tally/mock_pack.py` and run `python -m tally.mock_pack`.
 
 The model settings are read from `.env` (`ALIBABA_LLM_API_KEY`, `ALIBABA_LLM_ENDPOINT`, `ALIBABA_LLM_MODEL`). Documents stay on local disk.
 
@@ -33,7 +33,6 @@ static/                     frontend, plain ES modules, no build step
       ownership/            the only built section: map, inspector, view-model.js,
                             and structure/ (the pannable ownership canvas)
     lib/                    countries (names, flags, map positions) and icons
-    mock/intake.js          mock onboarding intake, grouped by the bank's 8 requirement groups
 tally/                      backend, FastAPI
   main.py                   app setup only
   api/                      routes: cases, review, monitoring, policy, chat
@@ -41,6 +40,9 @@ tally/                      backend, FastAPI
     pipeline.py             assess(): calls the checks in order
     checks/                 documents, ownership, screening, source_of_funds
     extraction.py people.py pack.py findings.py scoring.py memo.py monitoring.py
+  intake.py                 reads a pack of PDFs into the 8 requirement groups (no model)
+  mock_pack.py              writes the mock Silver Oak pack to demo/demo-docs/silver-oak-pack/
+data/checklist.json         the checklist, by the bank's 8 requirement groups
 ```
 
 To add a frontend section, create `static/js/sections/<name>/index.js` exporting `{ id, step, label, mount(container, caseData) }` and list it in `static/js/sections/index.js`.

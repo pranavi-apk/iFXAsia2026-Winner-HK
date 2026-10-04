@@ -51,7 +51,7 @@ function worldHtml(layout) {
   const paths = layout.edges.map((e) => `<path d="${edgePath(e)}" marker-end="url(#tree-arrow)" />`).join("");
   const pills = layout.edges
     .filter((e) => e.pct != null)
-    .map((e) => `<span class="tree-edge-pill" style="left:${e.to.x}px; top:${e.to.y - 22}px;">${e.pct}%</span>`)
+    .map((e) => `<span class="tree-edge-pill" style="left:${e.pillAt.x}px; top:${e.pillAt.y}px;">${e.pct}%</span>`)
     .join("");
   const toggles = layout.toggles
     .map(

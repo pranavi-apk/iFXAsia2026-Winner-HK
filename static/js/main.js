@@ -62,7 +62,7 @@ mountPipelineModal($("#overlays"));
 mountCopilot($("#overlays"));
 renderWelcome(app, { onSample: openSample, onUpload: openUpload });
 
-const savedCase = new URLSearchParams(location.search).get("case") || "harbour-lantern";
+const savedCase = new URLSearchParams(location.search).get("case") || "silver-oak";
 if (savedCase) {
   api.getCase(savedCase).then(showCase).catch(() => {
     openSample();

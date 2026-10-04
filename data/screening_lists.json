@@ -2,15 +2,40 @@
   "sanctions": {
     "label": "Prototype sample. Not the Hong Kong TFS list (UNSO Cap. 537 / UNATMO Cap. 575).",
     "entries": [
-      {"name": "Soren V. Halek", "aliases": ["Soren Halek"], "program": "Sample list"},
-      {"name": "Mara Q. Ellison", "aliases": [], "program": "Sample list"},
-      {"name": "North Atlas Shipping", "aliases": ["Atlas North Shipping Ltd"], "program": "Sample list"}
+      {
+        "name": "Soren V. Halek",
+        "aliases": [
+          "Soren Halek"
+        ],
+        "program": "Sample list"
+      },
+      {
+        "name": "Mara Q. Ellison",
+        "aliases": [],
+        "program": "Sample list"
+      },
+      {
+        "name": "North Atlas Shipping",
+        "aliases": [
+          "Atlas North Shipping Ltd"
+        ],
+        "program": "Sample list"
+      }
     ]
   },
   "pep": {
     "label": "Illustrative sample. Not a licensed PEP database and not an HKMA or SFC register.",
     "entries": [
-      {"name": "Patrick Lam", "aliases": [], "role": "Sample entry: former municipal councillor"}
+      {
+        "name": "Patrick Lam",
+        "aliases": [],
+        "role": "Sample entry: former municipal councillor"
+      },
+      {
+        "name": "Chen Xiao Lin",
+        "aliases": [],
+        "role": "Sample entry: former district council adviser"
+      }
     ]
   }
 }

@@ -1,10 +1,8 @@
 // Everything the Ownership screen shows comes from buildOwnershipView().
 //
-// It reads the intake (see mock/intake.js, which follows the bank's eight
-// requirement groups). A case from the backend can carry its own `intake` in
-// that shape; until it does, the mock intake is used. The owners, subsidiaries,
-// profile, documents and findings all come from there.
-import { MOCK_INTAKE } from "../../mock/intake.js";
+// It reads the case's intake, which the backend builds from the pack's PDFs
+// (tally/intake.py). The owners, subsidiaries, profile, documents and findings
+// all come from there.
 import { buildMapData } from "./map/data.js";
 
 const SHORT_DATE = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
@@ -28,7 +26,7 @@ const countEntities = (nodes) =>
   (nodes || []).reduce((sum, node) => sum + (node.kind === "person" ? 0 : 1) + countEntities(node.children), 0);
 
 export function buildOwnershipView(caseData) {
-  const intake = caseData.intake || MOCK_INTAKE;
+  const intake = caseData.intake;
   const { profile } = intake.company;
   const legalName = profile.legalName;
   const jurisdiction = profile.jurisdiction;
