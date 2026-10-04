@@ -1,10 +1,27 @@
 # Tracy
 
-Tracy reads one corporate onboarding pack, runs five compliance checks, and leaves the decision with the officer.
+Tracy helps a compliance officer review a company that wants to open an account.
 
-Ownership percentages are calculated in code. Name matching is a visible threshold. The model only extracts text and drafts the memo.
+Upload the company's documents. Tracy reads the pack, checks what is missing, who owns and controls the company, whether any names need a closer look, and where the money comes from. It then prepares a risk view and a draft approval memo. The officer reviews the findings and makes the decision.
 
-## Run
+## What the officer sees
+
+- **Documents.** What arrived in the pack, and what is still missing.
+- **Ownership & Control.** Who owns the company, and how that ownership is held.
+- **Sanctions & PEP.** Names checked against the lists loaded for this demo.
+- **Source of Funds.** Where the money is said to come from, and whether the papers support that.
+- **Risk Rating.** A score, with the findings behind it.
+- **Approval Memo.** A draft the officer can review and sign.
+
+## Try it
+
+Silver Oak Holdings Ltd is a made-up company for the demo. Open the app and choose **Open sample case**, or upload any of its documents. Tracy shows the prepared review for that company.
+
+Upload a different company's documents and Tracy reads those files and builds the review from them. That takes longer, because it is a real review of whatever was uploaded.
+
+Documents stay on this computer. The sanctions list, the PEP list, and the risk points are labelled samples for the prototype.
+
+## Start the app
 
 ```bash
 python3 -m venv .venv
@@ -13,38 +30,4 @@ pip install -r requirements.txt
 uvicorn tally.main:app --reload --port 8080
 ```
 
-Open http://localhost:8080 and choose **Open sample case**. The sample company, Silver Oak Holdings Ltd, is invented. Its pack is the PDFs in `demo/demo-docs/silver-oak-pack/`, read in code with no model call. To change the sample, edit `tally/mock_pack.py` and run `python -m tally.mock_pack`.
-
-The model settings are read from `.env` (`ALIBABA_LLM_API_KEY`, `ALIBABA_LLM_ENDPOINT`, `ALIBABA_LLM_MODEL`). Documents stay on local disk.
-
-## Project layout
-
-The sidebar sections (Documents, Ownership & Control, Sanctions & PEP, Source of Funds, Risk Rating, Approval Memo) are the unit of organisation on both sides.
-
-```
-static/                     frontend, plain ES modules, no build step
-  index.html                shell only
-  css/                      base.css, layout.css, sections/, components/
-  js/
-    main.js                 start-up and wiring
-    core/                   api calls, shared state, DOM helpers
-    components/             sidebar, pipeline modal, welcome, page header
-    sections/               one folder per sidebar section; index.js lists them
-      ownership/            the only built section: map, inspector, view-model.js,
-                            and structure/ (the pannable ownership canvas)
-    lib/                    countries (names, flags, map positions) and icons
-tally/                      backend, FastAPI
-  main.py                   app setup only
-  api/                      routes: cases, review, monitoring, policy, chat
-  assessment/               the review pipeline
-    pipeline.py             assess(): calls the checks in order
-    checks/                 documents, ownership, screening, source_of_funds
-    extraction.py people.py pack.py findings.py scoring.py memo.py monitoring.py
-  intake.py                 reads a pack of PDFs into the 8 requirement groups (no model)
-  mock_pack.py              writes the mock Silver Oak pack to demo/demo-docs/silver-oak-pack/
-data/checklist.json         the checklist, by the bank's 8 requirement groups
-```
-
-To add a frontend section, create `static/js/sections/<name>/index.js` exporting `{ id, step, label, mount(container, caseData) }` and list it in `static/js/sections/index.js`.
-
-The sanctions list, PEP list, checklist, and risk points in `data/` are labelled samples for the prototype.
+Open http://localhost:8080. The model key is read from a local `.env` file and is not part of the app.
