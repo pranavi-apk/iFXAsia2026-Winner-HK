@@ -2,7 +2,19 @@ from pathlib import Path
 
 from fpdf import FPDF
 
-FONT = "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
+FONT_CANDIDATES = [
+    "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+    "C:/Windows/Fonts/msyh.ttc",
+    "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+]
+
+
+def _find_font() -> str:
+    for candidate in FONT_CANDIDATES:
+        if Path(candidate).exists():
+            return candidate
+    raise FileNotFoundError("No Unicode font with Chinese glyphs found. Add one to FONT_CANDIDATES in tally/demo_pack.py.")
 
 PACK = {
     "01-certificate-of-incorporation.pdf": """CERTIFICATE OF INCORPORATION
@@ -98,7 +110,7 @@ def _write_pdf(path: Path, text: str) -> None:
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=18)
     pdf.add_page()
-    pdf.add_font("Body", "", FONT)
+    pdf.add_font("Body", "", _find_font())
     pdf.set_font("Body", size=12)
     pdf.multi_cell(0, 7, text.strip())
     pdf.output(path)

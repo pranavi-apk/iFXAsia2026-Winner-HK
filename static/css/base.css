@@ -1,0 +1,54 @@
+:root {
+  --bg-main: #f3f4f6;
+  --bg-sidebar: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f8fafc;
+  --border-color: #e5e7eb;
+  --border-hover: #d1d5db;
+  
+  --primary: #0f172a;
+  --primary-hover: #1e293b;
+  --primary-light: #eff6ff;
+  --accent-blue: #2563eb;
+  --accent-slate: #475569;
+  
+  --status-clear: #10b981;
+  --status-clear-bg: #ecfdf5;
+  --status-clear-border: #a7f3d0;
+  
+  --status-review: #f59e0b;
+  --status-review-bg: #fffbeb;
+  --status-review-border: #fde68a;
+  
+  --status-attention: #ef4444;
+  --status-attention-bg: #fef2f2;
+  --status-attention-border: #fecaca;
+
+  --text-main: #111827;
+  --text-muted: #4b5563;
+  --text-subtle: #6b7280;
+
+  --font-heading: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-title: 'Outfit', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body.light-theme {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}

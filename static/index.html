@@ -7,216 +7,31 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/app.css" />
+
+  <!-- Styles: shared first, then per-section and per-component. Order matters. -->
+  <link rel="stylesheet" href="/static/css/base.css" />
+  <link rel="stylesheet" href="/static/css/layout.css" />
+  <link rel="stylesheet" href="/static/css/sections/ownership.css" />
+  <link rel="stylesheet" href="/static/css/components/pipeline-modal.css" />
+  <link rel="stylesheet" href="/static/css/components/copilot.css" />
+  <link rel="stylesheet" href="/static/css/components/welcome.css" />
+
+  <!-- Libraries used by the ownership map (globals: L, topojson) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="/static/vendor/vis-network.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/static/vendor/topojson-client.min.js"></script>
+
+  <script type="module" src="/static/js/main.js"></script>
 </head>
 <body class="light-theme">
   <div class="app-layout">
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-      <div class="sidebar-top">
-        <a href="/" class="back-link">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-          Back to Case
-        </a>
-      </div>
-
-      <nav class="sidebar-nav">
-        <button class="nav-item" data-step="1" data-tab="tab-summary">
-          <span class="nav-num check-icon">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-          </span>
-          <span class="nav-label">Documents</span>
-        </button>
-
-        <button class="nav-item active" data-step="2" data-tab="tab-ownership">
-          <span class="nav-num">2</span>
-          <span class="nav-label">Ownership & Control</span>
-        </button>
-
-        <button class="nav-item" data-step="3" data-tab="tab-analytics">
-          <span class="nav-num">3</span>
-          <span class="nav-label">Sanctions & PEP</span>
-        </button>
-
-        <button class="nav-item" data-step="4" data-tab="tab-findings">
-          <span class="nav-num">4</span>
-          <span class="nav-label">Source of Funds</span>
-        </button>
-
-        <button class="nav-item" data-step="5" data-tab="tab-policy">
-          <span class="nav-num">5</span>
-          <span class="nav-label">Risk Rating</span>
-        </button>
-
-        <button class="nav-item" data-step="6" data-tab="tab-decision">
-          <span class="nav-num">6</span>
-          <span class="nav-label">Approval Memo</span>
-        </button>
-      </nav>
-
-      <div class="sidebar-footer">
-        <button id="sample" type="button" class="btn-sidebar">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Demo Case
-        </button>
-        <label class="btn-sidebar upload-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Upload Pack
-          <input id="files" type="file" accept="application/pdf" multiple />
-        </label>
-      </div>
-    </aside>
-
-    <!-- Main Content Area -->
+    <aside id="sidebar" class="sidebar"></aside>
     <div class="main-wrapper">
-      <!-- Main Content Container -->
-      <main id="app" class="main-content">
-        <!-- Landing Showcase Hero -->
-        <section class="welcome-hero">
-          <div class="hero-content">
-            <div class="hero-badge">⚡ Autonomous Corporate Onboarding</div>
-            <h1>Ownership & Control Intelligence</h1>
-            <p>Visualise corporate structure, ultimate beneficial owners (UBOs), and key relationships with verified documentary proof and automated sanctions screening.</p>
-            
-            <div class="hero-cta">
-              <button id="hero-sample-btn" class="btn btn-primary btn-lg shadow-glow">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                Launch Demo Case (Silver Oak Holdings / Harbour Lantern)
-              </button>
-              <label class="btn btn-secondary btn-lg upload-btn shadow-hover">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Upload PDF Pack
-                <input id="hero-files" type="file" accept="application/pdf" multiple />
-              </label>
-            </div>
-
-            <!-- Metric Highlight Cards -->
-            <div class="hero-stats">
-              <div class="stat-card">
-                <div class="stat-icon">⚡</div>
-                <div class="stat-num">5 Sec</div>
-                <div class="stat-label">Full Pack Verification</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-icon">🧠</div>
-                <div class="stat-num">100%</div>
-                <div class="stat-label">Grounded Quote Proof</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-icon">🛡️</div>
-                <div class="stat-num">5,000+</div>
-                <div class="stat-label">UN & HK Sanctions Entries</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
+      <main id="app" class="main-content"></main>
     </div>
   </div>
 
-  <!-- Live Multi-Agent Execution Pipeline Modal -->
-  <div id="pipeline-modal" class="pipeline-modal-overlay">
-    <div class="pipeline-card">
-      <div class="pipeline-header">
-        <div class="pipeline-title">
-          <span class="pulsing-dot"></span>
-          AUTONOMOUS MULTI-AGENT COMPLIANCE ENGINE
-        </div>
-        <div style="font-size: 0.85rem; color: #64748b;" id="pipeline-status-text">Initializing autonomous verification agents...</div>
-      </div>
-      
-      <div class="pipeline-steps">
-        <div class="p-step" id="p-step-1">
-          <div class="p-icon">1</div>
-          <div class="p-info">
-            <div class="p-name">Document Grounding & Text Chunking</div>
-            <div class="p-sub">LLM extracting entity profiles & verified quote blocks</div>
-          </div>
-          <div class="p-status">Pending</div>
-        </div>
-
-        <div class="p-step" id="p-step-2">
-          <div class="p-icon">2</div>
-          <div class="p-info">
-            <div class="p-name">Graph Ownership & UBO Traversal</div>
-            <div class="p-sub">Recursive path multiplication & gap detection in Python</div>
-          </div>
-          <div class="p-status">Pending</div>
-        </div>
-
-        <div class="p-step" id="p-step-3">
-          <div class="p-icon">3</div>
-          <div class="p-info">
-            <div class="p-name">Official HK Registry Lookup</div>
-            <div class="p-sub">Live API queries to HK Companies Registry & HKMA data</div>
-          </div>
-          <div class="p-status">Pending</div>
-        </div>
-
-        <div class="p-step" id="p-step-4">
-          <div class="p-icon">4</div>
-          <div class="p-info">
-            <div class="p-name">UN & HK Sanctions Fuzzy Screening</div>
-            <div class="p-sub">Cross-checking entities across 5,000+ designation entries</div>
-          </div>
-          <div class="p-status">Pending</div>
-        </div>
-
-        <div class="p-step" id="p-step-5">
-          <div class="p-icon">5</div>
-          <div class="p-info">
-            <div class="p-name">Risk Matrix & Executive Memo Synthesis</div>
-            <div class="p-sub">Evaluating penalty weights & drafting officer memorandum</div>
-          </div>
-          <div class="p-status">Pending</div>
-        </div>
-      </div>
-
-      <div class="pipeline-progress-bar">
-        <div class="progress-fill" id="pipeline-progress"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Floating Copilot Assistant Drawer -->
-  <div id="ai-copilot-widget" class="copilot-widget" style="display: none;">
-    <button id="copilot-toggle-btn" class="copilot-fab">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span>Ask Tally AI Copilot</span>
-    </button>
-
-    <div id="copilot-drawer" class="copilot-drawer" style="display: none;">
-      <div class="copilot-header">
-        <div class="copilot-title">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-          Compliance Officer AI Assistant
-        </div>
-        <button id="copilot-close-btn" class="close-btn">&times;</button>
-      </div>
-
-      <div class="copilot-messages" id="copilot-msg-box">
-        <div class="copilot-msg bot">
-          Welcome Officer! Ask me to explain risk findings, summarize director backgrounds, or generate customer correspondence letters.
-        </div>
-      </div>
-
-      <div class="copilot-suggestions">
-        <button class="chip-btn" data-ask="Why is this case assigned a Medium risk rating?">Why Medium risk?</button>
-        <button class="chip-btn" data-ask="List all directors and their nationalities.">Summarize directors</button>
-        <button class="chip-btn" data-ask="Draft a professional letter asking for the missing register of members.">Draft request letter</button>
-      </div>
-
-      <div class="copilot-input-area">
-        <input type="text" id="copilot-input" placeholder="Type a message or regulatory query..." />
-        <button id="copilot-send" class="btn btn-primary btn-sm">Send</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="/static/app.js"></script>
+  <!-- Pipeline modal and AI copilot are mounted here by js/main.js -->
+  <div id="overlays"></div>
 </body>
 </html>
