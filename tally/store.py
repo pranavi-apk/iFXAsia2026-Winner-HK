@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 
 from tally.config import CASES, UPLOADS
 
+_MEMORY: dict[str, dict] = {}
+
 
 def new_id() -> str:
     return uuid.uuid4().hex[:12]
@@ -19,6 +21,7 @@ def save(case: dict) -> dict:
     CASES.mkdir(parents=True, exist_ok=True)
     path = CASES / f"{case['id']}.json"
     path.write_text(json.dumps(case, indent=2))
+    _MEMORY[case["id"]] = case
     return case
 
 
@@ -27,10 +30,14 @@ def stamp_now() -> str:
 
 
 def load(case_id: str) -> dict:
+    if case_id in _MEMORY:
+        return _MEMORY[case_id]
     path = CASES / f"{case_id}.json"
     if not path.exists():
         raise FileNotFoundError(case_id)
-    return json.loads(path.read_text())
+    case = json.loads(path.read_text())
+    _MEMORY[case_id] = case
+    return case
 
 
 def stamp_now() -> str:

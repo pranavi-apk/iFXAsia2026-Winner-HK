@@ -4,6 +4,16 @@ async function request(url, options) {
   return response.json();
 }
 
+async function fromStoredCase(id, caseData, path) {
+  try {
+    return await request(`/api/cases/${encodeURIComponent(id)}${path}`);
+  } catch (error) {
+    if (!caseData?.intake || !String(error.message).includes("Case not found")) throw error;
+    await request("/api/cases/sample", { method: "POST" });
+    return request("/api/cases/silver-oak" + path);
+  }
+}
+
 export const api = {
   sampleCase: () => request("/api/cases/sample", { method: "POST" }),
 
@@ -15,7 +25,7 @@ export const api = {
 
   getCase: (id) => request(`/api/cases/${encodeURIComponent(id)}`),
 
-  riskRating: (id) => request(`/api/cases/${encodeURIComponent(id)}/risk-rating`),
+  riskRating: (id, caseData) => fromStoredCase(id, caseData, "/risk-rating"),
 
   async riskReport(id) {
     const response = await fetch(`/api/cases/${encodeURIComponent(id)}/risk-rating/report`);
@@ -23,7 +33,7 @@ export const api = {
     return response.blob();
   },
 
-  getScreening: (id) => request(`/api/cases/${encodeURIComponent(id)}/sanctions`),
+  getScreening: (id, caseData) => fromStoredCase(id, caseData, "/sanctions"),
 
   liveLookup: (id, name) =>
     request(`/api/cases/${encodeURIComponent(id)}/sanctions/lookup`, {

@@ -11,10 +11,10 @@ from pathlib import Path
 import httpx
 import json
 
-from tally.config import DATA
+from tally.config import runtime_dir
 from tally.screening import _fold, _tokens, list_score
 
-CACHE = DATA / "registry_cache"
+CACHE = runtime_dir("registry_cache")
 CR_URL = "https://data.cr.gov.hk/cr/api/api/v1/api_builder/json/local/search"
 HKMA_URL = "https://api.hkma.gov.hk/public/bank-svf-info/register-ais-lros"
 GLEIF_URL = "https://api.gleif.org/api/v1/lei-records"

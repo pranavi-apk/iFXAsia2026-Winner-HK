@@ -98,7 +98,7 @@ export function layoutStructure(structure, expanded) {
     // Owners' arrows meet at the owned card, so an owner's percentage sits just under its own card;
     // a subsidiary's sits just above it. That keeps every pill on the arrow it belongs to.
     const pillAt = e.dir === "down" ? { x: to.x, y: to.y - ARROW_RUN / 2 - 4 } : { x: from.x, y: from.y + ARROW_RUN / 2 };
-    edges.push({ from, to, pct: e.node.pct, pillAt });
+    edges.push({ from, to, pct: e.node.pct ?? null, pillAt });
   }
 
   return {

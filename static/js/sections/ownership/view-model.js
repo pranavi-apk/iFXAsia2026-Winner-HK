@@ -13,8 +13,12 @@ const shortDate = (iso) => {
 };
 
 function countryOf(value) {
-  const text = String(value || "");
+  const text = String(value || "").trim();
   if (/british|england|wales|scotland|united kingdom|\buk\b/i.test(text)) return "United Kingdom";
+  if (/hong kong/i.test(text)) return "Hong Kong";
+  if (/singapore/i.test(text)) return "Singapore";
+  if (/\bchina\b|chinese|\bprc\b/i.test(text)) return "China";
+  if (/virgin|bvi/i.test(text)) return "British Virgin Islands";
   return text;
 }
 
@@ -25,6 +29,7 @@ const IN_PACK = new Set(["verified", "received", "stale", "expired"]);
 // applicant: each link's percentage multiplied along the way.
 function effectiveOwners(owners, share = 1) {
   return (owners || []).flatMap((owner) => {
+    if (owner.pct == null) return [];
     const here = share * (owner.pct / 100);
     return owner.kind === "person"
       ? [{ name: owner.name, country: owner.country, pct: Math.round(here * 1000) / 10 }]
@@ -34,6 +39,35 @@ function effectiveOwners(owners, share = 1) {
 
 const countEntities = (nodes) =>
   (nodes || []).reduce((sum, node) => sum + (node.kind === "person" ? 0 : 1) + countEntities(node.children), 0);
+
+function namesIn(nodes, found = new Set()) {
+  for (const node of nodes || []) {
+    found.add(String(node.name || "").toLowerCase());
+    namesIn(node.children, found);
+  }
+  return found;
+}
+
+function controlPeople(intake, structure) {
+  const known = namesIn([...(structure.owners || []), ...(structure.subsidiaries || [])]);
+  const heads = [
+    ...(intake.management?.directors || []),
+    ...(intake.management?.signatories || []).map((person) => ({ ...person, role: person.role || person.rule || "Signatory" })),
+  ];
+  return heads.flatMap((person) => {
+    const name = person.name || "";
+    if (!name || known.has(name.toLowerCase())) return [];
+    known.add(name.toLowerCase());
+    return [{
+      id: `control-${person.id || name}`,
+      kind: "person",
+      name,
+      country: countryOf(person.nationality || person.residence || person.country),
+      role: person.role || "Director",
+      pct: null,
+    }];
+  });
+}
 
 function fromCase(caseData) {
   const entity = caseData.entity || {};
@@ -100,9 +134,10 @@ export function buildOwnershipView(caseData) {
     owners: intake.ownership.structure.owners,
     subsidiaries: intake.ownership.structure.subsidiaries,
   };
+  const ubos = effectiveOwners(structure.owners);
+  structure.owners = [...structure.owners, ...controlPeople(intake, structure)];
 
   const map = buildMapData(structure);
-  const ubos = effectiveOwners(structure.owners);
 
   const packDocuments = [...intake.company.documents, ...intake.ownership.documents].filter((item) => IN_PACK.has(item.status));
   const keyFindings = intake.findings

@@ -199,11 +199,14 @@ async def create_case(files: list[UploadFile] = File(...)):
             dest = folder / path.name
             if not dest.exists():
                 shutil.copy(path, dest)
+            sample_dest = case_dir(SAMPLE_ID) / path.name
+            if not sample_dest.exists():
+                shutil.copy(path, sample_dest)
         texts = _texts(folder)
         pages = {path.name: len(PdfReader(str(path)).pages) for path in folder.glob("*.pdf")}
         assessment = _prepared_assessment(texts, pages)
         title = assessment["entity"]["legal_name"]
-        return stamp(case_id, title, assessment)
+        return stamp(SAMPLE_ID, title, assessment)
     assessment = assess(_texts(folder))
     title = (assessment.get("entity") or {}).get("legal_name") or "Uploaded case"
     return ensure_adverse_media(stamp(case_id, title, assessment))
@@ -253,7 +256,10 @@ def get_risk_report(case_id: str):
 
 @router.get("/{case_id}/files/{filename}")
 def get_file(case_id: str, filename: str):
-    path = case_dir(case_id) / Path(filename).name
+    name = Path(filename).name
+    path = case_dir(case_id) / name
+    if not path.exists() and (PACK_DIR / name).exists():
+        shutil.copy(PACK_DIR / name, path)
     if not path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(path, media_type="application/pdf")

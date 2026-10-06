@@ -4,8 +4,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
-CASES = DATA / "cases"
-UPLOADS = DATA / "uploads"
+
+
+def runtime_dir(name: str) -> Path:
+    """Folder the app can write. Vercel only allows writes under /tmp."""
+    if os.environ.get("VERCEL"):
+        path = Path("/tmp/tracy") / name
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+    return DATA / name
+
+
+CASES = runtime_dir("cases")
+UPLOADS = runtime_dir("uploads")
 
 
 def load_env() -> None:

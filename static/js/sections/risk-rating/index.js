@@ -354,8 +354,8 @@ function bind(container) {
 
 async function loadData(container, caseData) {
   try {
-    state.caseId = caseData.id;
-    state.data = await api.riskRating(caseData.id);
+    state.caseId = caseData.intake ? "silver-oak" : caseData.id;
+    state.data = await api.riskRating(caseData.id, caseData);
   } catch (error) {
     container.querySelector("#risk-content").innerHTML = `<div class="risk-panel-error"><strong>Risk Rating could not be loaded</strong><span>${escapeHtml(error.message)}</span></div>`;
     return;

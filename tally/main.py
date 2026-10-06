@@ -5,19 +5,17 @@ from fastapi.staticfiles import StaticFiles
 from tally.api import router
 from tally.config import ROOT
 
-class NoCacheStaticFiles(StaticFiles):
-    """The frontend is plain ES modules. Without this a browser can keep an old module
-    that imports a file that has since moved, and the whole app fails to start."""
-
-    async def get_response(self, path, scope):
-        response = await super().get_response(path, scope)
-        response.headers["Cache-Control"] = "no-cache"
-        return response
-
-
-app = FastAPI(title="Tally")
+app = FastAPI(title="Tracy")
 STATIC = ROOT / "static"
-app.mount("/static", NoCacheStaticFiles(directory=STATIC), name="static")
+app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+
+@app.middleware("http")
+async def fresh_static(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/static"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
 app.mount("/assets", StaticFiles(directory=ROOT / "assets"), name="assets")
 app.include_router(router)
 

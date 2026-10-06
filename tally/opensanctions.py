@@ -11,10 +11,10 @@ from datetime import datetime, timezone
 
 import httpx
 
-from tally.config import DATA
+from tally.config import runtime_dir
 from tally.screening import _tokens, list_score, name_forms
 
-CACHE = DATA / "sanctions_cache"
+CACHE = runtime_dir("sanctions_cache")
 CSV_NAME = "opensanctions_sanctions.csv"
 URL = "https://data.opensanctions.org/datasets/latest/sanctions/targets.simple.csv"
 SOURCE = "OpenSanctions sanctions collection"

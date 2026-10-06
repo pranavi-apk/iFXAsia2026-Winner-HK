@@ -11,7 +11,7 @@
 
   <!-- Styles: shared first, then per-section and per-component. Order matters. -->
   <link rel="stylesheet" href="/static/css/base.css" />
-  <link rel="stylesheet" href="/static/css/layout.css" />
+  <link rel="stylesheet" href="/static/css/layout.css?v=4" />
   <link rel="stylesheet" href="/static/css/sections/documents.css" />
   <link rel="stylesheet" href="/static/css/sections/ownership.css?v=3" />
   <link rel="stylesheet" href="/static/css/sections/sanctions.css" />
@@ -19,14 +19,15 @@
   <link rel="stylesheet" href="/static/css/sections/approval_memo.css" />
   <link rel="stylesheet" href="/static/css/sections/risk-rating.css" />
   <link rel="stylesheet" href="/static/css/components/pipeline-modal.css" />
-  <link rel="stylesheet" href="/static/css/components/welcome.css" />
+  <link rel="stylesheet" href="/static/css/components/agent.css?v=1" />
+  <link rel="stylesheet" href="/static/css/components/welcome.css?v=4" />
 
   <!-- Libraries used by the ownership map (globals: L, topojson) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/static/vendor/topojson-client.min.js"></script>
 
-  <script type="module" src="/static/js/main.js"></script>
+  <script type="module" src="/static/js/main.js?v=6"></script>
 </head>
 <body class="light-theme">
   <header class="tracy-header">
@@ -47,7 +48,6 @@
           Upload pack
           <input id="header-files" type="file" accept="application/pdf" multiple />
         </label>
-        <span class="system-status-pill"><span class="status-dot"></span> Live System</span>
       </div>
     </div>
   </header>
