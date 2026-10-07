@@ -33,3 +33,9 @@ def landing():
 def app_dashboard():
     return FileResponse(STATIC / "index.html")
 
+
+@app.get("/demo")
+def product_demo():
+    return FileResponse(STATIC / "demo.html")
+
+

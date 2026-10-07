@@ -221,15 +221,44 @@
 }
 
 /* Ownership Hierarchy Custom Tree Node Card */
+.structure-board-head {
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.structure-board-title h2 {
+  letter-spacing: -0.02em;
+}
+
+.structure-board-title p {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: #8c8477;
+  line-height: 1.35;
+}
+
 .tree-controls {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  flex-shrink: 0;
 }
 
-.tree-controls .btn-sm {
-  padding: 2px 10px;
+.structure-board .tree-controls .btn {
+  background: #faf7f2;
+  color: #3d3730;
+  border: 1px solid #efe8da;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
   font-size: 0.75rem;
+  font-weight: 650;
+  box-shadow: none;
+}
+
+.structure-board .tree-controls .btn:hover {
+  background: #fff;
+  border-color: #c8a966;
+  color: #1c1915;
 }
 
 .tree-hint {
@@ -242,7 +271,8 @@
   min-width: 2.6rem;
   text-align: center;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: #785427;
 }
 
 /* The canvas: a fixed-size window onto a larger, pannable drawing. */
@@ -250,15 +280,52 @@
   position: relative;
   height: 520px;
   overflow: hidden;
-  border: 1px solid #f1f5f9;
-  border-radius: 10px;
-  background: #f8fafc;
-  background-image: radial-gradient(#dbe2ec 1.2px, transparent 1.2px);
-  background-size: 20px 20px;
+  border: 1px solid #efe8da;
+  border-radius: 16px;
+  background-color: #faf7f2;
+  background-image:
+    radial-gradient(circle at 50% 42%, rgba(200, 169, 102, 0.18), transparent 46%),
+    radial-gradient(#e6dccb 1.15px, transparent 1.15px);
+  background-size: auto, 22px 22px;
   cursor: grab;
   touch-action: none;
   user-select: none;
 }
+
+.tree-legend {
+  position: absolute;
+  left: 0.85rem;
+  bottom: 0.85rem;
+  z-index: 3;
+  display: flex;
+  gap: 0.85rem;
+  padding: 0.4rem 0.7rem;
+  background: rgba(255, 253, 249, 0.92);
+  border: 1px solid #efe8da;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(28, 25, 21, 0.05);
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: #57534e;
+  pointer-events: none;
+}
+
+.tree-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tree-legend .swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.tree-legend .swatch.root { background: #1c1915; }
+.tree-legend .swatch.person { background: #c8a966; }
+.tree-legend .swatch.company { background: #fff; border: 1.5px solid #c8a966; }
 
 .tree-viewport.panning {
   cursor: grabbing;
@@ -281,31 +348,47 @@
 
 .tree-edges > path {
   fill: none;
-  stroke: #94a3b8;
-  stroke-width: 1.5;
+  stroke: #c4a15a;
+  stroke-width: 1.75;
+  stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .tree-node-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border: 1px solid #efe8da;
+  border-radius: 14px;
   padding: 0.85rem 1rem;
   min-width: 210px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 8px 18px rgba(28, 25, 21, 0.05);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.7rem;
   position: relative;
-  transition: all 0.2s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .tree-node-card.in-canvas {
   position: absolute;
   width: 250px;
-  height: 88px;
+  height: 108px;
   min-width: 0;
-  padding: 0 0.85rem;
+  padding: 0 0.8rem;
+  box-sizing: border-box;
+}
+
+.tree-node-card.is-root {
+  background: #1c1915;
+  border-color: #1c1915;
+  box-shadow: 0 12px 24px rgba(28, 25, 21, 0.18);
+}
+
+.tree-node-card.is-person {
+  background: #fffdf9;
+}
+
+.tree-node-card.is-company {
+  background: #ffffff;
 }
 
 .tree-node-card .node-details {
@@ -325,21 +408,54 @@
   text-overflow: ellipsis;
 }
 
-.tree-node-card:hover {
-  border-color: #cbd5e1;
-  box-shadow: var(--shadow-md);
+.tree-node-card.is-person:hover,
+.tree-node-card.is-company:hover {
+  border-color: #c8a966;
+  box-shadow: 0 10px 22px rgba(28, 25, 21, 0.08);
 }
 
+.node-kicker {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #a16207;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.is-root .node-kicker {
+  color: #e7c56a;
+}
+
+.node-avatar,
 .node-icon-box {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: #f1f5f9;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #475569;
   flex-shrink: 0;
+}
+
+.node-avatar {
+  background: #1c1915;
+  color: #fef08a;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.node-icon-box {
+  background: #f7f1e5;
+  color: #785427;
+}
+
+.is-root .node-icon-box {
+  background: rgba(200, 169, 102, 0.18);
+  color: #fef08a;
 }
 
 .node-details {
@@ -347,16 +463,47 @@
 }
 
 .node-name {
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: 0.84rem;
+  font-weight: 750;
+  color: #1c1915;
   line-height: 1.2;
 }
 
+.is-root .node-name {
+  color: #fffdf8;
+}
+
+.node-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+  min-width: 0;
+}
+
 .node-sub {
-  font-size: 0.75rem;
-  color: #64748b;
-  margin-top: 2px;
+  font-size: 0.72rem;
+  color: #8c8477;
+  margin-top: 0;
+}
+
+.is-root .node-sub {
+  color: #d6cebe;
+}
+
+.node-pct {
+  flex-shrink: 0;
+  background: #f7f1e5;
+  color: #785427;
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.is-root .node-pct {
+  background: rgba(200, 169, 102, 0.2);
+  color: #fef08a;
 }
 
 .node-flag {
@@ -370,50 +517,56 @@
 }
 
 .node-tag {
-  font-size: 0.65rem;
-  font-weight: 700;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: #e0f2fe;
-  color: #0369a1;
+  border-radius: 999px;
+  background: #f7f1e5;
+  color: #785427;
+  border: 1px solid #efe8da;
   display: inline-block;
   margin-left: auto;
+  flex-shrink: 0;
 }
 
 .tree-edge-pill {
   position: absolute;
   transform: translate(-50%, -50%);
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  border-radius: 12px;
-  padding: 1px 8px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #475569;
+  background: #1c1915;
+  border: 1px solid #1c1915;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #fef08a;
+  letter-spacing: 0.01em;
   pointer-events: none;
+  box-shadow: 0 4px 10px rgba(28, 25, 21, 0.12);
 }
 
 .tree-toggle {
   position: absolute;
   transform: translate(-50%, -50%);
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
-  border-radius: 11px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #475569;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  border-radius: 999px;
+  border: 1px solid #c8a966;
+  background: #fffdf9;
+  color: #785427;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 10px rgba(28, 25, 21, 0.08);
   z-index: 2;
 }
 
 .tree-toggle:hover {
-  border-color: #2563eb;
-  color: #2563eb;
+  background: #1c1915;
+  border-color: #1c1915;
+  color: #fef08a;
 }
 
 /* Right Entity Inspector Details Panel */

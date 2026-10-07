@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tracy — Product Demo</title>
+  <link rel="icon" href="/static/img/tracy_logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, sans-serif;
+      background: radial-gradient(circle at 20% 0%, #fff8ec 0%, #f3eee4 45%, #e9e2d6 100%);
+      color: #1c1915;
+    }
+    header {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      font-family: Outfit, sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      text-decoration: none;
+      color: inherit;
+    }
+    .actions { display: flex; gap: 0.75rem; }
+    .actions a {
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.55rem 0.95rem;
+      border-radius: 999px;
+      border: 1px solid #ddd4c4;
+      color: #1c1915;
+      background: #fff;
+    }
+    .actions a.primary {
+      background: #1c1915;
+      color: #f8f1e4;
+      border-color: #1c1915;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0.5rem 1.5rem 3rem;
+    }
+    h1 {
+      font-family: Outfit, sans-serif;
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      letter-spacing: -0.03em;
+      margin: 0 0 0.4rem;
+    }
+    p.lead {
+      margin: 0 0 1.4rem;
+      color: #6b645b;
+      max-width: 42rem;
+      line-height: 1.5;
+    }
+    .stage {
+      background: #111;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(40, 30, 15, 0.18);
+    }
+    video {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="/">Tracy</a>
+    <div class="actions">
+      <a href="/">Home</a>
+      <a class="primary" href="/app">Open app</a>
+    </div>
+  </header>
+  <main>
+    <h1>Product demo</h1>
+    <p class="lead">A walkthrough of Tracy on the Silver Oak Holdings case: upload, overview, map, ownership, people, knowledge base, gaps, and the copilot.</p>
+    <div class="stage">
+      <video controls playsinline preload="metadata" poster="">
+        <source src="/static/video/tracy-demo.mp4" type="video/mp4" />
+      </video>
+    </div>
+  </main>
+</body>
+</html>
