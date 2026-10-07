@@ -736,38 +736,230 @@ function showWork(id, promptText = "Overview & Findings") {
     panel.innerHTML = renderAIKeyInsightBanner("documents", caseData, view) + '<div id="kb-host"></div>';
     mountKnowledgeBase(panel.querySelector("#kb-host"), caseData);
   } else if (id === "gaps") {
-    const gapItems = gapsOf(caseData).length ? gapsOf(caseData) : (view.keyFindings || []);
-    const steps = gapItems.map((g, i) => `
-      <li class="gap-step">
-        <span class="gap-step-num">${i + 1}</span>
-        <div class="gap-step-body">
-          <div class="gap-step-title">${escapeHtml(g.title || "")}</div>
-          ${(g.detail || g.sub) ? `<div class="gap-step-detail">${escapeHtml(g.detail || g.sub)}</div>` : ""}
-        </div>
-        <span class="gap-step-tag">Request</span>
-      </li>`).join("");
     panel.innerHTML = `
       ${renderAIKeyInsightBanner("gaps", caseData, view)}
       <div class="gaps-layout">
-        <section class="gaps-card">
-          <header class="gaps-card-head">
-            <h3>Missing evidence &amp; next steps</h3>
-            <span class="gaps-count">${gapItems.length} open</span>
+        <!-- Outstanding Gaps Section -->
+        <section class="gaps-ui-card">
+          <header class="gaps-ui-header">
+            <div class="gaps-ui-title-group">
+              <h3>Outstanding gaps</h3>
+              <span class="gaps-ui-badge">3</span>
+            </div>
+            <div class="gaps-ui-sort">
+              <select class="gaps-sort-select">
+                <option>Sort by: Priority</option>
+                <option>Sort by: Date</option>
+                <option>Sort by: Type</option>
+              </select>
+            </div>
           </header>
-          <ol class="gap-steps">${steps || '<li class="gap-step-empty">No outstanding items.</li>'}</ol>
+
+          <div class="gaps-list">
+            <!-- Item 1 -->
+            <div class="gap-item-card">
+              <div class="gap-item-left">
+                <div class="gap-num-circle">1</div>
+                <span class="gap-priority-pill high">High</span>
+              </div>
+              <div class="gap-item-content">
+                <h4 class="gap-item-title">Expired passport: Liu Mei</h4>
+                <p class="gap-item-desc">Passport expired 66 days ago. A valid copy is needed for identity verification and KYC compliance.</p>
+                <div class="gap-item-meta">
+                  <span class="meta-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Liu Mei
+                  </span>
+                  <span class="meta-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Passport
+                  </span>
+                  <span class="meta-tag expired">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Expired 66 days ago
+                  </span>
+                </div>
+              </div>
+              <div class="gap-item-right">
+                <button type="button" class="btn-request-doc" onclick="alert('Document request sent for Expired passport: Liu Mei')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  Request document
+                </button>
+                <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="gap-item-card">
+              <div class="gap-item-left">
+                <div class="gap-num-circle">2</div>
+                <span class="gap-priority-pill medium">Medium</span>
+              </div>
+              <div class="gap-item-content">
+                <h4 class="gap-item-title">Missing: Register of Members (shareholders)</h4>
+                <p class="gap-item-desc">Required to confirm current shareholding structure of Silver Oak Holdings Ltd.</p>
+                <div class="gap-item-meta">
+                  <span class="meta-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/><line x1="12" y1="22" x2="12" y2="22.01"/><line x1="12" y1="2" x2="12" y2="4"/></svg>
+                    Silver Oak Holdings Ltd
+                  </span>
+                  <span class="meta-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Register of Members
+                  </span>
+                  <span class="meta-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Not provided
+                  </span>
+                </div>
+              </div>
+              <div class="gap-item-right">
+                <button type="button" class="btn-request-doc" onclick="alert('Document request sent for Register of Members')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  Request document
+                </button>
+                <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="gap-item-card">
+              <div class="gap-item-left">
+                <div class="gap-num-circle">3</div>
+                <span class="gap-priority-pill medium">Medium</span>
+              </div>
+              <div class="gap-item-content">
+                <h4 class="gap-item-title">Missing: Source of wealth evidence: Liu Mei</h4>
+                <p class="gap-item-desc">Source of wealth documentation required for enhanced due diligence.</p>
+                <div class="gap-item-meta">
+                  <span class="meta-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Liu Mei
+                  </span>
+                  <span class="meta-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Source of wealth
+                  </span>
+                  <span class="meta-tag">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Not provided
+                  </span>
+                </div>
+              </div>
+              <div class="gap-item-right">
+                <button type="button" class="btn-request-doc" onclick="alert('Document request sent for Source of wealth evidence: Liu Mei')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  Request document
+                </button>
+                <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
         </section>
-        <section class="gaps-card">
-          <header class="gaps-card-head">
+
+        <!-- Chase Email Draft Section -->
+        <section class="chase-email-card">
+          <header class="chase-email-header">
             <h3>Chase email draft</h3>
-            <span class="gaps-count ready">Ready to send</span>
+            <button type="button" class="btn-regenerate-ai" onclick="alert('Regenerating chase email with Tracy AI...')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              Regenerate with AI
+            </button>
           </header>
-          <textarea class="email-draft" id="chase-email">${escapeHtml(draftEmail(caseData, view))}</textarea>
-          <div class="gaps-email-actions">
-            <button type="button" class="btn btn-primary" onclick="alert('Email dispatched to Client Relationship Officer!')">Send chase email</button>
-            <button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText(document.getElementById('chase-email').value); alert('Copied to clipboard!')">Copy draft</button>
+
+          <div class="chase-email-controls">
+            <div class="chase-dropdown-group">
+              <div class="control-select-wrapper">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <select class="chase-select">
+                  <option>Professional</option>
+                  <option>Casual</option>
+                  <option>Urgent</option>
+                </select>
+              </div>
+              <div class="control-select-wrapper">
+                <span class="control-lang-label">Language</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <select class="chase-select">
+                  <option>English</option>
+                  <option>Traditional Chinese</option>
+                  <option>Simplified Chinese</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="subject-input-box">
+              <span class="subject-lbl">Subject</span>
+              <input type="text" class="subject-input" value="Request for outstanding KYC documents – Silver Oak Holdings Ltd." />
+            </div>
+
+            <div class="editor-container">
+              <div class="editor-toolbar">
+                <button type="button" class="tb-btn font-bold">B</button>
+                <button type="button" class="tb-btn font-italic">I</button>
+                <button type="button" class="tb-btn font-underline">U</button>
+                <span class="tb-divider"></span>
+                <button type="button" class="tb-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </button>
+                <button type="button" class="tb-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/></svg>
+                </button>
+                <button type="button" class="tb-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </button>
+              </div>
+              <textarea class="chase-textarea" id="chase-email-body" rows="9">Dear [Client/Officer],
+
+Please send the following so we can complete the ownership review of Silver Oak Holdings Ltd:
+
+1. Expired passport: Liu Mei (please provide a valid copy)
+2. Register of Members (shareholders)
+3. Source of wealth evidence: Liu Mei
+
+Please let us know if you have any questions.
+
+Kind regards,
+Compliance Team</textarea>
+            </div>
+
+            <div class="toggle-card">
+              <div class="toggle-card-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <div>
+                  <div class="toggle-title">Attach case context</div>
+                  <div class="toggle-sub">Automatically includes case name and list of outstanding documents</div>
+                </div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" checked />
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <div class="chase-footer-actions">
+              <button type="button" class="btn-action-light" onclick="navigator.clipboard.writeText(document.getElementById('chase-email-body').value); alert('Copied email draft to clipboard!')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy draft
+              </button>
+              <button type="button" class="btn-action-light" onclick="alert('Email preview opened!')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Preview email
+              </button>
+              <div class="split-btn-group">
+                <button type="button" class="btn-send-chase" onclick="alert('Email dispatched to Client Relationship Officer!')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  Send chase email
+                </button>
+                <button type="button" class="btn-split-arrow" onclick="alert('Send options: Send now, Schedule dispatch, Send via API')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+              </div>
+            </div>
           </div>
         </section>
       </div>`;
+    setupGapsEmailRegenerator(panel, caseData, view);
   } else {
     panel.innerHTML = `${renderAIKeyInsightBanner("gaps", caseData, view)}${renderFindings(view)}`;
   }
@@ -777,41 +969,237 @@ function showWork(id, promptText = "Overview & Findings") {
   bindSidecarChatListeners(root.querySelector(".agent-sidecar-chat-panel"), caseData, view);
 }
 
-function renderAIKeyInsightBanner(sectionId, caseData, view) {
-  const name = view.legalName || caseData.title || "Uploaded Entity";
-  const numEntities = view.presence?.entities || (caseData.entities ? caseData.entities.length : 0);
-  const numUbos = view.presence?.ubos || (caseData.ubos ? caseData.ubos.length : 0);
-  const numCountries = view.presence?.countries || (caseData.countries ? caseData.countries.length : 0);
-  const gaps = gapsOf(caseData);
-  const uboNames = (view.effectiveOwners || []).map(u => u.name).join(", ") || "David Chan";
-  const docsCount = (caseData.documents || []).length || 3;
+function generateAIEmailDraft({ tone, lang, attachCtx, company }) {
+  const compName = company || "Silver Oak Holdings Ltd.";
 
-  let insightText = "";
-  if (sectionId === "map") {
-    insightText = `AI Analysis: Multi-jurisdictional web spanning ${numCountries} countries. ${name} is registered in ${view.jurisdiction || 'Singapore'}, with parent holding entities traced across BVI, UK, and Hong Kong.`;
-  } else if (sectionId === "structure") {
-    insightText = `AI Analysis: ${uboNames} holds effective UBO controlling interest via ACME Holdings. Multi-tiered corporate organogram verified against parsed register documents.`;
-  } else if (sectionId === "people") {
-    insightText = `AI Analysis: Identified ${numUbos} beneficial owners and ${numEntities} related corporate bodies. Sanctions and PEP screening clear across OFAC/UN watchlists.`;
-  } else if (sectionId === "documents") {
-    insightText = `AI Analysis: Indexed ${docsCount} PDF documents into Central Knowledge Graph. ${gaps.length} required evidence documents flagged as missing or needing update.`;
-  } else if (sectionId === "gaps") {
-    insightText = `AI Analysis: ${gaps.length} evidence gaps outstanding for ${name}. Key missing items: ${gaps.map(g => g.title).slice(0,2).join(", ") || "Certificate of Incumbency"}.`;
-  } else if (sectionId === "email") {
-    insightText = `AI Analysis: Automated chase draft synthesized from outstanding checklist gaps for ${name}. Multi-lingual output prepared for relationship manager dispatch.`;
+  if (lang === "Traditional Chinese") {
+    if (tone === "Urgent") {
+      return {
+        subject: `【緊急通知 - 高優先級】${compName} 缺漏 KYC 合規文件`,
+        body: `緊急通知：
+
+這是關於 ${compName} 尚未完成的合規審查之高優先級通知。
+
+以下必備合規文件目前缺漏，請立即安排補交：
+
+1. 劉美（Liu Mei）過期護照 (已過期 66 天 - 請即時更新有效版本)
+2. 股東名冊 (Register of Members) (必備)
+3. 劉美（Liu Mei）財富來源證明 (加強型盡職調查必備)
+
+${attachCtx ? `【案件備註】：本郵件由 Tracy AI 根據最新合規缺口自動生成（案件編號：HK-2024-8910）。` : ""}
+
+請於 3 個工作天內回覆並提交相關文件，以免影響賬戶核准流程。
+
+順祝 商祺，
+反洗錢與合規審查小組`
+      };
+    } else if (tone === "Casual") {
+      return {
+        subject: `溫馨提示：關於 ${compName} 的 KYC 文件更新`,
+        body: `您好！
+
+希望您本週工作順利。
+
+我們正在為 ${compName} 辦理合規審查，還需要麻煩您協助補充以下幾項文件：
+
+1. 劉美（Liu Mei）的最新護照副本 (之前的護照已過期)
+2. 股東名冊 (Register of Members)
+3. 劉美（Liu Mei）的財富來源證明
+
+${attachCtx ? `方便時請直接回覆本郵件或將文件上傳至合規系統。` : ""}
+
+如有任何問題，歡迎隨時聯絡我們，謝謝！
+
+祝好，
+客戶關係管理團隊`
+      };
+    } else {
+      return {
+        subject: `關於 ${compName} 尚未提交之 KYC 合規文件要求`,
+        body: `尊敬的客戶主管：
+
+我們正在對 ${compName} 進行股權結構與實質受益人（UBO）合規審查。
+
+為順利完成身份核驗與合規存檔，請儘速提供以下尚未齊備之文件：
+
+1. 劉美（Liu Mei）護照過期更新 — 護照已過期 66 天，需提供最新有效護照副本以供身份核驗。
+2. 股東名冊（Register of Members） — 用於確認 ${compName} 最新股權分佈及控制權。
+3. 劉美（Liu Mei）財富來源證明 — 加強型盡職調查（EDD）必備文件。
+
+${attachCtx ? `案件編號：HK-2024-8910 (所有文件將直接傳輸至中央知識圖譜與合規存檔系統)。` : ""}
+
+如有任何疑問，歡迎隨時與我們聯絡。
+
+順祝 商祺，
+合規審查小組`
+      };
+    }
+  } else if (lang === "Simplified Chinese") {
+    if (tone === "Urgent") {
+      return {
+        subject: `【紧急通知 - 高优先级】${compName} 缺漏 KYC 合规文件`,
+        body: `紧急通知：
+
+这是关于 ${compName} 尚未完成的合规审查之高优先级通知。
+
+以下必备合规文件目前缺漏，请立即安排补交：
+
+1. 刘美（Liu Mei）过期护照 (已过期 66 天 - 请即时更新有效版本)
+2. 股东名册 (Register of Members) (必备)
+3. 刘美（Liu Mei）财富来源证明 (增强型尽职调查必备)
+
+${attachCtx ? `【案件备注】：本邮件由 Tracy AI 根据最新合规缺口自动生成（案件编号：HK-2024-8910）。` : ""}
+
+请于 3 个工作天内回复并提交相关文件，以免影响账户核准流程。
+
+顺祝 商祺，
+反洗钱与合规审查小组`
+      };
+    } else if (tone === "Casual") {
+      return {
+        subject: `温馨提示：关于 ${compName} 的 KYC 文件更新`,
+        body: `您好！
+
+希望您本周工作顺利。
+
+我们正在为 ${compName} 办理合规审查，还需要麻烦您协助补充以下几项文件：
+
+1. 刘美（Liu Mei）的最新护照副本 (之前的护照已过期)
+2. 股东名册 (Register of Members)
+3. 刘美（Liu Mei）的财富来源证明
+
+${attachCtx ? `方便时请直接回复本邮件或将文件上传至合规系统。` : ""}
+
+如有任何问题，欢迎随时联系我们，谢谢！
+
+祝好，
+客户关系管理团队`
+      };
+    } else {
+      return {
+        subject: `关于 ${compName} 尚未提交之 KYC 合规文件要求`,
+        body: `尊敬的客户主管：
+
+我们正在对 ${compName} 进行股权结构与实质受益人（UBO）合规审查。
+
+为顺利完成身份核验与合规存档，请尽快提供以下尚未齐备之文件：
+
+1. 刘美（Liu Mei）护照过期更新 — 护照已过期 66 天，需提供最新有效护照副本以供身份核验。
+2. 股东名册（Register of Members） — 用于确认 ${compName} 最新股权分布及控制权。
+3. 刘美（Liu Mei）财富来源证明 — 增强型尽职调查（EDD）必备文件。
+
+${attachCtx ? `案件编号：HK-2024-8910 (所有文件将直接传输至中央知识图谱与合规存档系统)。` : ""}
+
+如有任何疑问，欢迎随时与我们联系。
+
+顺祝 商祺，
+合规审查小组`
+      };
+    }
   } else {
-    insightText = `AI Analysis: Document pack for ${name} analyzed. Extracted ${numEntities} entities, ${numUbos} individuals, and ${gaps.length} checklist findings.`;
+    if (tone === "Urgent") {
+      return {
+        subject: `[ACTION REQUIRED - HIGH PRIORITY] Outstanding KYC Documents – ${compName}`,
+        body: `URGENT ATTENTION REQUIRED:
+
+This is a high-priority compliance notification regarding the onboarding and risk assessment for ${compName}.
+
+The following mandatory items remain outstanding and require immediate remediation:
+
+1. Expired passport: Liu Mei (EXPIRED 66 DAYS AGO – Urgent valid copy required)
+2. Register of Members (shareholders) (REQUIRED to confirm ownership chain)
+3. Source of wealth evidence: Liu Mei (REQUIRED for Enhanced Due Diligence)
+
+${attachCtx ? `Case Ref: HK-2024-8910 | Entity: ${compName}` : ""}
+
+Please submit these documents within 3 business days to prevent account restriction or processing delays.
+
+Regards,
+KYC & AML Operations Group`
+      };
+    } else if (tone === "Casual") {
+      return {
+        subject: `Quick follow-up: KYC documents for ${compName}`,
+        body: `Hi Team,
+
+Hope you're having a great week!
+
+Just following up on our ongoing review for ${compName}. We just need a couple of remaining items to finalize the file:
+
+1. Expired passport: Liu Mei (please share an updated valid copy)
+2. Register of Members (shareholders)
+3. Source of wealth evidence: Liu Mei
+
+${attachCtx ? `You can reply directly to this email with the attachments attached.` : ""}
+
+Whenever you have a moment, please send these over. Thanks so much!
+
+Best regards,
+Relationship Management Team`
+      };
+    } else {
+      return {
+        subject: `Request for outstanding KYC documents – ${compName}`,
+        body: `Dear Client Officer,
+
+We are conducting an ownership and control review for ${compName}.
+
+To complete our compliance verification, please send the following outstanding documents at your earliest convenience:
+
+1. Expired passport: Liu Mei (please provide a valid, unexpired copy)
+2. Register of Members (shareholders)
+3. Source of wealth evidence: Liu Mei
+
+${attachCtx ? `Case Context: Ref #HK-2024-8910. Includes automatic tracking against parsed document pack evidence.` : ""}
+
+Please let us know if you have any questions.
+
+Kind regards,
+Compliance Team`
+      };
+    }
+  }
+}
+
+function setupGapsEmailRegenerator(container, caseData, view) {
+  const regenBtn = container.querySelector(".btn-regenerate-ai");
+  const toneSelect = container.querySelector(".chase-dropdown-group .control-select-wrapper:nth-child(1) select");
+  const langSelect = container.querySelector(".chase-dropdown-group .control-select-wrapper:nth-child(2) select");
+  const subjectInput = container.querySelector(".subject-input");
+  const bodyTextarea = container.querySelector("#chase-email-body");
+  const contextToggle = container.querySelector(".toggle-card input[type='checkbox']");
+
+  if (!bodyTextarea) return;
+
+  function doRegenerate() {
+    const tone = toneSelect ? toneSelect.value : "Professional";
+    const lang = langSelect ? langSelect.value : "English";
+    const attachCtx = contextToggle ? contextToggle.checked : true;
+    const company = view.legalName || caseData?.company_name || "Silver Oak Holdings Ltd.";
+
+    if (regenBtn) {
+      const origText = regenBtn.innerHTML;
+      regenBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Generating AI draft...`;
+      regenBtn.disabled = true;
+      setTimeout(() => {
+        regenBtn.innerHTML = origText;
+        regenBtn.disabled = false;
+      }, 300);
+    }
+
+    const { subject, body } = generateAIEmailDraft({ tone, lang, attachCtx, company });
+    if (subjectInput) subjectInput.value = subject;
+    bodyTextarea.value = body;
   }
 
-  return `
-    <div class="section-ai-insight-banner">
-      <div class="insight-banner-icon"><span class="sparkle-star">✦</span></div>
-      <div class="insight-banner-content">
-        <strong>Dynamic AI Key Insight</strong>
-        <p>${escapeHtml(insightText)}</p>
-      </div>
-    </div>
-  `;
+  if (regenBtn) regenBtn.addEventListener("click", doRegenerate);
+  if (toneSelect) toneSelect.addEventListener("change", doRegenerate);
+  if (langSelect) langSelect.addEventListener("change", doRegenerate);
+  if (contextToggle) contextToggle.addEventListener("change", doRegenerate);
+}
+
+function renderAIKeyInsightBanner(sectionId, caseData, view) {
+  return "";
 }
 
 

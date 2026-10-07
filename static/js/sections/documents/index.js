@@ -5,11 +5,11 @@ import { buildKnowledgeGraph, filterGraph, MODES } from "./knowledge-graph.js";
 import { buildDocumentsView, buildUploadedView, DOC_STATUS_LABEL } from "./view-model.js";
 
 const COLORS = {
-  person: { bg: "#2a2620", border: "#c9a45c", font: "#f3ead6", shape: "dot" },
-  company: { bg: "#1f2a26", border: "#7fae94", font: "#e3efe8", shape: "box" },
-  document: { bg: "#26262b", border: "#8a8577", font: "#cfc8b6", shape: "box" },
-  alias: { bg: "#1d1d1f", border: "#5c574c", font: "#a9a291", shape: "ellipse" },
-  conflict: { bg: "#3a1b1b", border: "#d05a4e", font: "#ffd9d4", shape: "box" },
+  person: { bg: "#eff6ff", border: "#3b82f6", font: "#1e3a8a", shape: "dot" },
+  company: { bg: "#f0fdf4", border: "#22c55e", font: "#14532d", shape: "box" },
+  document: { bg: "#ffffff", border: "#64748b", font: "#0f172a", shape: "box" },
+  alias: { bg: "#faf5ff", border: "#a855f7", font: "#581c87", shape: "ellipse" },
+  conflict: { bg: "#fef2f2", border: "#ef4444", font: "#7f1d1d", shape: "box" },
 };
 const TYPE_LABEL = { person: "Person", company: "Company", document: "Document", alias: "Name variant", conflict: "Conflict" };
 
@@ -55,16 +55,16 @@ function drawGraph(el, graph, mode, onPick, fresh = new Set()) {
     const c = COLORS[n.type];
     return {
       id: n.id, label: n.label.length > 28 ? `${n.label.slice(0, 26)}…` : n.label, shape: c.shape,
-      color: { background: c.bg, border: fresh.has(n.id) ? "#ffe9a8" : c.border, highlight: { background: c.bg, border: "#f0d089" } },
-      font: { color: c.font, face: "Inter", size: 13 }, borderWidth: n.conflict || fresh.has(n.id) ? 3 : 1.5, shadow: fresh.has(n.id) ? { enabled: true, color: "#f0d089", size: 22, x: 0, y: 0 } : false,
+      color: { background: c.bg, border: fresh.has(n.id) ? "#d97706" : c.border, highlight: { background: c.bg, border: "#2563eb" } },
+      font: { color: c.font, face: "Inter", size: 13 }, borderWidth: n.conflict || fresh.has(n.id) ? 3 : 1.5, shadow: fresh.has(n.id) ? { enabled: true, color: "rgba(217,119,6,0.3)", size: 15, x: 0, y: 0 } : false,
       size: n.id === "applicant" ? 26 : 16, margin: 10,
     };
   });
   const edges = sub.edges.map((e) => ({
     id: e.id, from: e.from, to: e.to, label: e.label, arrows: e.kind === "evidence" || e.kind === "identity" ? "" : "to",
     dashes: e.kind === "evidence" || e.kind === "identity",
-    color: { color: e.conflict ? "#d05a4e" : "#8d7840", highlight: "#f0d089" },
-    font: { color: "#b9ae92", size: 10, strokeWidth: 0, face: "Inter", background: "#16161a" },
+    color: { color: e.conflict ? "#ef4444" : "#cbd5e1", highlight: "#2563eb" },
+    font: { color: "#475569", size: 10, strokeWidth: 2, strokeColor: "#ffffff", face: "Inter", background: "#f8fafc" },
     smooth: { type: "dynamic" },
   }));
   const network = new window.vis.Network(el, { nodes: new window.vis.DataSet(nodes), edges: new window.vis.DataSet(edges) }, {
@@ -126,7 +126,7 @@ export function mountKnowledgeBase(container, caseData, onChange = () => {}) {
           <input class="kb-search" placeholder="Search entities, documents, aliases…" />
         </div>
         <div class="kb-main">
-          <div class="kb-canvas"><div class="kb-graph"></div><div class="kb-empty" hidden>Nothing to show in this view yet.</div></div>
+          <div class="kb-canvas"><div class="kb-graph"></div><div class="kb-empty" hidden></div></div>
           <aside class="kb-panel"><p class="kb-muted">Select a node to see what Tracy knows, or an edge to see why it is connected.</p></aside>
         </div>
         <details class="kb-repo"><summary>Document repository</summary>${repository(caseData)}</details>

@@ -40,7 +40,6 @@ function profileCard(view) {
 
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
         <h4 style="font-size: 0.85rem; font-weight: 700; color: #0f172a;">Basic Information</h4>
-        <button class="btn btn-secondary btn-sm" style="padding: 1px 8px; font-size: 0.72rem;">Edit</button>
       </div>
 
       <table class="info-table">${rows}</table>
@@ -707,12 +706,6 @@ function setupDirectoryEvents(entities) {
   if (closeBg) closeBg.addEventListener("click", closeDrawer);
 
   bindRowClicks();
-
-  // Auto-open David Chan drawer by default if desired for demo view
-  const defaultDavid = entities.find(e => e.id === "david-chan");
-  if (defaultDavid) {
-    openDrawer(defaultDavid);
-  }
 }
 
 function renderDrawerContent(entity) {
@@ -809,6 +802,7 @@ function renderDrawerContent(entity) {
       </div>
     </div>
 
+    ${(entity.type || "").toLowerCase() === "individual" ? "" : `
     <!-- Drawer Navigation Tabs -->
     <div class="drawer-nav-tabs">
       <button class="drawer-tab-btn active" data-panel="panel-overview">Overview</button>
@@ -816,6 +810,7 @@ function renderDrawerContent(entity) {
       <button class="drawer-tab-btn" data-panel="panel-documents">Documents (${entity.evidence.length})</button>
       <button class="drawer-tab-btn" data-panel="panel-timeline">Timeline</button>
     </div>
+    `}
 
     <!-- Drawer Content Body -->
     <div class="drawer-body">
@@ -826,7 +821,6 @@ function renderDrawerContent(entity) {
         <div class="drawer-section-box">
           <div class="drawer-section-header">
             <h4>Basic information</h4>
-            <button class="btn-edit-sm">Edit</button>
           </div>
           <table class="drawer-info-table">
             <tr>
@@ -855,7 +849,6 @@ function renderDrawerContent(entity) {
         <div class="drawer-section-box">
           <div class="drawer-section-header">
             <h4>Relationships</h4>
-            <a href="#" class="drawer-link">View all (${entity.relationships.length})</a>
           </div>
           <div class="drawer-rels-list">
             ${relsList}
@@ -865,7 +858,6 @@ function renderDrawerContent(entity) {
         <div class="drawer-section-box">
           <div class="drawer-section-header">
             <h4>Evidence & KYC Documents</h4>
-            <a href="#" class="drawer-link">View all (${entity.evidence.length})</a>
           </div>
           <div class="drawer-ev-list">
             ${evList}
