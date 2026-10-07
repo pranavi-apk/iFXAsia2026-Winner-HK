@@ -63,3 +63,21 @@ def stamp(case_id: str, title: str, assessment: dict) -> dict:
     }
     append_audit(case, "opened", f"Case opened for {title}.")
     return save(case)
+
+
+def list_all() -> list[dict]:
+    CASES.mkdir(parents=True, exist_ok=True)
+    results = []
+    for path in sorted(CASES.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        try:
+            case = json.loads(path.read_text())
+            results.append({
+                "id": case.get("id"),
+                "title": case.get("title") or (case.get("entity") or {}).get("legal_name") or "KYC Case",
+                "created_at": case.get("created_at"),
+                "decision": case.get("decision"),
+            })
+        except Exception:
+            continue
+    return results
+

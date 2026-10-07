@@ -17,9 +17,15 @@ from tally.assessment.risk_report import build_report
 from tally.assessment.pack import classify
 from tally.intake import build_intake, pack_documents
 from tally.mock_pack import PACK_DIR, write_pack
-from tally.store import case_dir, new_id, save, stamp
+from tally.store import case_dir, new_id, save, stamp, list_all
 
 router = APIRouter(prefix="/api/cases", tags=["cases"])
+
+
+@router.get("")
+def list_cases():
+    return list_all()
+
 
 
 def _texts(folder: Path) -> dict[str, str]:

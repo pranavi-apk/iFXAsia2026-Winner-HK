@@ -15,7 +15,9 @@ async function fromStoredCase(id, caseData, path) {
 }
 
 export const api = {
+  listCases: () => request("/api/cases"),
   sampleCase: () => request("/api/cases/sample", { method: "POST" }),
+
 
   uploadCase(files) {
     const body = new FormData();
