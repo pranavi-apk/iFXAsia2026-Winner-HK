@@ -17,7 +17,7 @@ from tally.assessment.risk_report import build_report
 from tally.assessment.pack import classify
 from tally.intake import build_intake, pack_documents
 from tally.mock_pack import PACK_DIR, write_pack
-from tally.store import case_dir, new_id, save, stamp, list_all
+from tally.store import append_audit, case_dir, new_id, save, stamp, list_all
 
 router = APIRouter(prefix="/api/cases", tags=["cases"])
 
@@ -236,6 +236,34 @@ def _with_funds(case: dict) -> dict:
         case.get("companies") or [],
     )
     return save(case)
+
+
+@router.post("/{case_id}/documents")
+async def add_documents(case_id: str, files: list[UploadFile] = File(...)):
+    """Add PDFs to an open case and re-read the whole pack, so new names join the people already found."""
+    case = load_case(case_id)
+    folder = case_dir(case_id)
+    added = []
+    for upload in files:
+        if not upload.filename or not upload.filename.lower().endswith(".pdf"):
+            continue
+        target = folder / Path(upload.filename).name
+        target.write_bytes(await upload.read())
+        PdfReader(str(target))
+        added.append(target.name)
+    if not added:
+        raise HTTPException(status_code=400, detail="Upload at least one PDF.")
+    texts = _texts(folder)
+    if case.get("intake"):
+        pages = {path.name: len(PdfReader(str(path)).pages) for path in folder.glob("*.pdf")}
+        assessment = _prepared_assessment(texts, pages)
+    else:
+        assessment = assess(texts)
+    keep = {key: case[key] for key in ("id", "title", "created_at", "decision", "audit", "adverse_media", "memo") if key in case}
+    updated = {**assessment, **keep}
+    updated["added_documents"] = added
+    append_audit(updated, "documents_added", f"Added {', '.join(added)} to the Knowledge Base.")
+    return save(updated)
 
 
 @router.get("/{case_id}")

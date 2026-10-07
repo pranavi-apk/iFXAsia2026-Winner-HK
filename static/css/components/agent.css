@@ -1312,9 +1312,16 @@ body.agent-app .main-content {
 
 .file-chips-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
   gap: 0.5rem;
-  padding: 0.15rem 0.25rem;
+  padding: 0.15rem 0.25rem 0.5rem;
+  scrollbar-width: thin;
+}
+
+.file-chips-row .uploaded-file-chip {
+  flex: 0 0 auto;
 }
 
 .uploaded-file-chip {
@@ -2623,9 +2630,52 @@ body.agent-app .main-content {
 /* ── Case Overview Bottom Chatbox (ChatGPT / LLM style) ─────── */
 .agent-work-split-container.no-sidecar .agent-main-content-panel {
   border-right: none;
-  max-width: 960px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   width: 100%;
+  flex: 1 1 100%;
+}
+
+.sidebar-bottom-copilot-pill { cursor: pointer; }
+
+/* Panel holding the chat: no outer scroll; only the thread scrolls */
+.agent-panel-body:has(.agent-thread-fixed) {
+  overflow: hidden;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.agent-thread.agent-thread-fixed {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.agent-thread-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.5rem clamp(1rem, 4vw, 3rem) 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.agent-thread-fixed .agent-msg-group { width: 100%; }
+.agent-thread-fixed .results-overview-card { width: 100%; box-sizing: border-box; }
+
+.agent-thread-fixed .overview-bottom-composer-bar {
+  flex-shrink: 0;
+  position: static;
+  margin: 0.75rem clamp(1rem, 4vw, 3rem) 1.25rem;
+  width: auto;
+  max-width: none;
 }
 
 .overview-bottom-composer-bar {
@@ -3313,3 +3363,21 @@ body.agent-app .main-content {
 
 
 
+
+/* ── Gaps & Next Steps ── */
+.gaps-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+@media (max-width: 1100px) { .gaps-layout { grid-template-columns: 1fr; } }
+.gaps-card { background: #fff; border: 1px solid #efe8da; border-radius: 16px; padding: 1.1rem 1.25rem; box-shadow: 0 4px 16px rgba(0,0,0,0.03); }
+.gaps-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem; }
+.gaps-card-head h3 { margin: 0; font-size: 0.98rem; font-weight: 700; color: #1c1915; }
+.gaps-count { font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.gaps-count.ready { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+.gap-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.gap-step { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.8rem 0.9rem; background: #faf7f2; border: 1px solid #efe8da; border-radius: 12px; }
+.gap-step-num { width: 24px; height: 24px; border-radius: 50%; background: #1c1915; color: #fef08a; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.gap-step-body { flex: 1; min-width: 0; }
+.gap-step-title { font-size: 0.88rem; font-weight: 600; color: #1c1915; line-height: 1.35; }
+.gap-step-detail { font-size: 0.78rem; color: #78716c; margin-top: 0.2rem; line-height: 1.4; }
+.gap-step-tag { font-size: 0.7rem; font-weight: 700; color: #8b5e2b; background: #f5eee0; border-radius: 6px; padding: 0.2rem 0.5rem; flex-shrink: 0; }
+.gaps-email-actions { display: flex; gap: 0.6rem; margin-top: 0.75rem; }
+.gaps-card .email-draft { min-height: 320px; font-size: 0.85rem; box-sizing: border-box; }

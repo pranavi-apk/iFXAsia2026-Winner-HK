@@ -25,6 +25,12 @@ export const api = {
     return request("/api/cases", { method: "POST", body });
   },
 
+  addDocuments(id, files) {
+    const body = new FormData();
+    for (const file of files) body.append("files", file);
+    return request(`/api/cases/${encodeURIComponent(id)}/documents`, { method: "POST", body });
+  },
+
   getCase: (id) => request(`/api/cases/${encodeURIComponent(id)}`),
 
   riskRating: (id, caseData) => fromStoredCase(id, caseData, "/risk-rating"),

@@ -1,94 +1,196 @@
-import { pageHeader } from "../../components/page-header.js";
+import { api } from "../../core/api.js";
 import { escapeHtml } from "../../core/dom.js";
-import { DOC_STATUS_LABEL, buildDocumentsView, buildUploadedView } from "./view-model.js";
+import { state } from "../../core/state.js";
+import { buildKnowledgeGraph, filterGraph, MODES } from "./knowledge-graph.js";
+import { buildDocumentsView, buildUploadedView, DOC_STATUS_LABEL } from "./view-model.js";
 
-const CELL = "padding: 1rem;";
-const MUTED = `${CELL} color: #64748b;`;
+const COLORS = {
+  person: { bg: "#2a2620", border: "#c9a45c", font: "#f3ead6", shape: "dot" },
+  company: { bg: "#1f2a26", border: "#7fae94", font: "#e3efe8", shape: "box" },
+  document: { bg: "#26262b", border: "#8a8577", font: "#cfc8b6", shape: "box" },
+  alias: { bg: "#1d1d1f", border: "#5c574c", font: "#a9a291", shape: "ellipse" },
+  conflict: { bg: "#3a1b1b", border: "#d05a4e", font: "#ffd9d4", shape: "box" },
+};
+const TYPE_LABEL = { person: "Person", company: "Company", document: "Document", alias: "Name variant", conflict: "Conflict" };
 
-const fileLink = (caseId, file) =>
-  `/api/cases/${encodeURIComponent(caseId || "")}/files/${encodeURIComponent(file)}`;
+const fileLink = (caseId, file) => `/api/cases/${encodeURIComponent(caseId || "")}/files/${encodeURIComponent(file)}`;
 
-// One table row. `row.file` is empty when there is no PDF for the item.
-function tableRow(row, caseId) {
-  const name = row.file
-    ? `<a href="${fileLink(caseId, row.file)}" target="_blank" rel="noopener" style="color: #2563eb; text-decoration: none;">${escapeHtml(row.file)}</a>`
-    : "";
-  return `
-    <tr style="border-bottom: 1px solid #e2e8f0;${ROW_STYLE[row.status] || ""}">
-      <td style="${CELL} padding-left: 2rem;">
-        <div style="font-weight: 500; color: #334155;">${escapeHtml(row.title)}</div>
-        ${row.note ? `<div class="doc-note">${escapeHtml(row.note)}</div>` : ""}
-      </td>
-      <td style="${MUTED} font-size: 0.8rem;">${name}</td>
-      <td style="${MUTED} white-space: nowrap;">${escapeHtml(row.date)}</td>
-      <td style="${MUTED} white-space: nowrap;">${row.pages ? `${row.pages} ${row.pages === 1 ? "Page" : "Pages"}` : ""}</td>
-      <td style="${CELL}"><span class="doc-badge doc-${escapeHtml(row.status)}">${escapeHtml(DOC_STATUS_LABEL[row.status] || row.status)}</span></td>
-    </tr>`;
+function sourceList(sources, caseId) {
+  if (!sources?.length) return `<p class="kb-muted">Analyst view only. No document source recorded.</p>`;
+  return sources.map((s) => `
+    <div class="kb-source">
+      <a href="${fileLink(caseId, s.file)}" target="_blank" rel="noopener">${escapeHtml(s.file)}</a>
+      ${s.quote ? `<blockquote>“${escapeHtml(s.quote)}”</blockquote>` : ""}
+      ${s.verified === false ? `<span class="kb-tag warn">Quote not verified</span>` : s.quote ? `<span class="kb-tag ok">Evidence-backed</span>` : ""}
+    </div>`).join("");
 }
 
-const COLUMNS = 5;
+function nodePanel(node, graph, caseId) {
+  const related = graph.edges.filter((e) => e.from === node.id || e.to === node.id);
+  const name = (id) => graph.nodes.find((n) => n.id === id)?.label || id;
+  return `
+    <div class="kb-eyebrow">${TYPE_LABEL[node.type]}</div>
+    <h3>${escapeHtml(node.label)}</h3>
+    ${node.sub ? `<p class="kb-muted">${escapeHtml(node.sub)}</p>` : ""}
+    ${node.role ? `<p class="kb-muted">${escapeHtml(node.role)}</p>` : ""}
+    ${node.aliases?.length ? `<div class="kb-eyebrow">Aliases</div><p>${node.aliases.map(escapeHtml).join(", ")}</p>` : ""}
+    <div class="kb-eyebrow">Connections (${related.length})</div>
+    ${related.map((e) => `<div class="kb-rel">${escapeHtml(name(e.from))} <b>${escapeHtml(e.label)}</b> ${escapeHtml(name(e.to))}</div>`).join("") || `<p class="kb-muted">None yet.</p>`}
+    ${node.evidence?.length ? `<div class="kb-eyebrow">Evidence</div>${sourceList(node.evidence.map((e) => ({ file: e.document, quote: e.quote, verified: e.verified })), caseId)}` : ""}`;
+}
 
-// Rows that need attention are tinted to match their status badge.
-const ROW_STYLE = {
-  stale: " background: #fffbeb;",
-  expired: " background: #fef2f2;",
-  missing: " background: #fef2f2;",
-};
+function edgePanel(edge, graph, caseId) {
+  const name = (id) => graph.nodes.find((n) => n.id === id)?.label || id;
+  return `
+    <div class="kb-eyebrow">Why is this connected?</div>
+    <h3>${escapeHtml(name(edge.from))}<br><span class="kb-arrow">${escapeHtml(edge.label)} →</span><br>${escapeHtml(name(edge.to))}</h3>
+    ${edge.conflict ? `<p class="kb-tag bad">Conflicting evidence. Requires analyst review.</p>` : ""}
+    <div class="kb-eyebrow">Evidence</div>
+    ${sourceList(edge.sources, caseId)}`;
+}
 
-const groupRow = (group) => `
-    <tr>
-      <td colspan="${COLUMNS}" style="padding: 0.7rem 1rem; background: #eff6ff; border-left: 4px solid #2563eb; border-top: 2px solid #ffffff;">
-        <span style="font-size: 0.95rem; font-weight: 800; color: #1d4ed8;">${escapeHtml(group.title)}</span>
-        <span style="margin-left: 0.6rem; font-size: 0.75rem; font-weight: 600; color: #64748b;">${group.rows.length} ${group.rows.length === 1 ? "document" : "documents"}</span>
-      </td>
-    </tr>`;
+function drawGraph(el, graph, mode, onPick, fresh = new Set()) {
+  const sub = filterGraph(graph, mode);
+  const nodes = sub.nodes.map((n) => {
+    const c = COLORS[n.type];
+    return {
+      id: n.id, label: n.label.length > 28 ? `${n.label.slice(0, 26)}…` : n.label, shape: c.shape,
+      color: { background: c.bg, border: fresh.has(n.id) ? "#ffe9a8" : c.border, highlight: { background: c.bg, border: "#f0d089" } },
+      font: { color: c.font, face: "Inter", size: 13 }, borderWidth: n.conflict || fresh.has(n.id) ? 3 : 1.5, shadow: fresh.has(n.id) ? { enabled: true, color: "#f0d089", size: 22, x: 0, y: 0 } : false,
+      size: n.id === "applicant" ? 26 : 16, margin: 10,
+    };
+  });
+  const edges = sub.edges.map((e) => ({
+    id: e.id, from: e.from, to: e.to, label: e.label, arrows: e.kind === "evidence" || e.kind === "identity" ? "" : "to",
+    dashes: e.kind === "evidence" || e.kind === "identity",
+    color: { color: e.conflict ? "#d05a4e" : "#8d7840", highlight: "#f0d089" },
+    font: { color: "#b9ae92", size: 10, strokeWidth: 0, face: "Inter", background: "#16161a" },
+    smooth: { type: "dynamic" },
+  }));
+  const network = new window.vis.Network(el, { nodes: new window.vis.DataSet(nodes), edges: new window.vis.DataSet(edges) }, {
+    physics: { solver: "forceAtlas2Based", stabilization: { iterations: 150 } },
+    interaction: { hover: true, zoomView: true, dragView: true },
+  });
+  network.on("click", (p) => {
+    if (p.nodes.length) onPick({ node: graph.nodes.find((n) => n.id === p.nodes[0]) });
+    else if (p.edges.length) onPick({ edge: graph.edges.find((e) => e.id === p.edges[0]) });
+  });
+  return network;
+}
+
+function repository(caseData) {
+  const checklist = Boolean(caseData?.intake);
+  const { groups } = checklist ? buildDocumentsView(caseData) : buildUploadedView(caseData);
+  const rows = groups.flatMap((g) => g.rows);
+  return `
+    <table class="kb-table">
+      <thead><tr><th>Document</th><th>File</th><th>Pages</th><th>Status</th></tr></thead>
+      <tbody>${rows.map((r) => `
+        <tr><td>${escapeHtml(r.title)}</td>
+        <td>${r.file ? `<a href="${fileLink(caseData.id, r.file)}" target="_blank" rel="noopener">${escapeHtml(r.file)}</a>` : ""}</td>
+        <td>${r.pages || ""}</td>
+        <td><span class="kb-tag ${r.status === "missing" || r.status === "expired" ? "bad" : r.status === "stale" ? "warn" : "ok"}">${escapeHtml(DOC_STATUS_LABEL[r.status] || r.status)}</span></td></tr>`).join("")}
+      </tbody>
+    </table>`;
+}
+
+const STEPS = ["Document parsed", "Pages extracted", "Entities extracted", "Existing entities resolved", "New relationships identified", "Evidence linked", "Conflicts checked"];
+
+// Node ids seen the last time each case was drawn, so new arrivals can be lit up.
+const seen = new Map();
+
+export function mountKnowledgeBase(container, caseData, onChange = () => {}) {
+    const graph = buildKnowledgeGraph(caseData);
+    const before = seen.get(caseData.id);
+    const fresh = new Set(before ? graph.nodes.filter((n) => !before.nodes.has(n.id)).map((n) => n.id) : []);
+    const newLinks = before ? graph.edges.filter((e) => !before.edges.has(`${e.from}|${e.to}|${e.label}`)).length : 0;
+    seen.set(caseData.id, { nodes: new Set(graph.nodes.map((n) => n.id)), edges: new Set(graph.edges.map((e) => `${e.from}|${e.to}|${e.label}`)) });
+    let mode = "all";
+    let network = null;
+
+    container.innerHTML = `
+      <div class="kb">
+        <header class="kb-head">
+          <div>
+            <div class="kb-eyebrow">Knowledge Base</div>
+            <h2>${escapeHtml(caseData.title || caseData.id)}</h2>
+            <p class="kb-muted">Every connection below is traced to a document. Nothing is inferred without a source.</p>
+          </div>
+          <label class="kb-add">+ Add documents<input type="file" accept="application/pdf" multiple hidden /></label>
+        </header>
+        <div class="kb-progress" hidden></div>
+        ${before && (fresh.size || newLinks) ? `<div class="kb-update">Knowledge Base updated: <b>${fresh.size}</b> new node${fresh.size === 1 ? "" : "s"}, <b>${newLinks}</b> new connection${newLinks === 1 ? "" : "s"}. New items are outlined in gold.</div>` : ""}
+        <div class="kb-stats">${Object.entries(graph.stats).map(([k, v]) => `<div><b>${v}</b><span>${k}</span></div>`).join("")}</div>
+        <div class="kb-toolbar">
+          <div class="kb-modes">${MODES.map(([id, label]) => `<button data-mode="${id}" class="${id === mode ? "on" : ""}">${label}${id === "conflicts" && graph.stats.Conflicts ? ` (${graph.stats.Conflicts})` : ""}</button>`).join("")}</div>
+          <input class="kb-search" placeholder="Search entities, documents, aliases…" />
+        </div>
+        <div class="kb-main">
+          <div class="kb-canvas"><div class="kb-graph"></div><div class="kb-empty" hidden>Nothing to show in this view yet.</div></div>
+          <aside class="kb-panel"><p class="kb-muted">Select a node to see what Tracy knows, or an edge to see why it is connected.</p></aside>
+        </div>
+        <details class="kb-repo"><summary>Document repository</summary>${repository(caseData)}</details>
+      </div>`;
+
+    const graphEl = container.querySelector(".kb-graph");
+    const panel = container.querySelector(".kb-panel");
+    const empty = container.querySelector(".kb-empty");
+    const pick = ({ node, edge }) => {
+      if (node) panel.innerHTML = nodePanel(node, graph, caseData.id);
+      else if (edge) panel.innerHTML = edgePanel(edge, graph, caseData.id);
+    };
+    const render = () => {
+      network?.destroy();
+      const sub = filterGraph(graph, mode);
+      empty.hidden = sub.nodes.length > 0 && sub.edges.length > 0;
+      network = window.vis ? drawGraph(graphEl, graph, mode, pick, fresh) : null;
+      if (!window.vis) graphEl.innerHTML = `<p class="kb-muted" style="padding:2rem">Graph library failed to load.</p>`;
+    };
+    render();
+
+    container.querySelectorAll(".kb-modes button").forEach((b) => b.addEventListener("click", () => {
+      mode = b.dataset.mode;
+      container.querySelectorAll(".kb-modes button").forEach((x) => x.classList.toggle("on", x === b));
+      render();
+    }));
+
+    container.querySelector(".kb-add input").addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+      const box = container.querySelector(".kb-progress");
+      box.hidden = false;
+      let step = 0;
+      const paint = (failed) => {
+        box.innerHTML = `<div class="kb-eyebrow">Adding to Knowledge Base</div><p>${files.map((f) => escapeHtml(f.name)).join(", ")}</p>` +
+          STEPS.map((t, i) => `<div class="kb-step ${i < step ? "done" : ""}">${i < step ? "✓" : "·"} ${t}</div>`).join("") +
+          (failed ? `<p class="kb-tag bad">${escapeHtml(failed)}</p>` : "");
+      };
+      paint();
+      const tick = setInterval(() => { if (step < STEPS.length - 1) { step += 1; paint(); } }, 1200);
+      try {
+        const saved = await api.addDocuments(caseData.id, files);
+        clearInterval(tick);
+        state.case = saved;
+        onChange(saved);
+        mountKnowledgeBase(container, saved, onChange);
+      } catch (err) {
+        clearInterval(tick);
+        paint(`Could not add documents: ${String(err.message).slice(0, 160)}`);
+      }
+    });
+
+    container.querySelector(".kb-search").addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      if (!q || !network) return;
+      const hit = graph.nodes.find((n) => `${n.label} ${n.sub} ${(n.aliases || []).join(" ")}`.toLowerCase().includes(q));
+      if (hit) { try { network.selectNodes([hit.id]); network.focus(hit.id, { scale: 1.1, animation: true }); } catch { /* not in this view */ } pick({ node: hit }); }
+    });
+  }
 
 export default {
   id: "documents",
   step: 1,
-  label: "Documents",
+  label: "Knowledge Base",
   done: true,
-
-  mount(container, caseData) {
-    const checklist = Boolean(caseData?.intake);
-    const { groups, total, withFile } = checklist ? buildDocumentsView(caseData) : buildUploadedView(caseData);
-    const summary = checklist
-      ? `${withFile} of ${total} checklist items have a PDF in the pack.`
-      : `${withFile} document${withFile === 1 ? "" : "s"} in this pack.`;
-
-    container.innerHTML = `
-      ${pageHeader({
-        title: "Document Repository & Extraction Pack",
-        subtitle: `Verifiable corporate filings and parsed documents for case: ${escapeHtml(caseData.title || caseData.id)}`
-      })}
-
-      <div class="documents-wrapper" style="display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem;">
-        <div class="card-panel" style="background: #ffffff; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h3 style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.25rem;">Uploaded Onboarding Pack</h3>
-            <p style="font-size: 0.88rem; color: #64748b; margin: 0;">${summary}</p>
-          </div>
-          <label class="btn btn-primary" style="padding: 0.6rem 1.25rem; background: #2563eb; color: white; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
-            <span>Upload Additional File</span>
-            <input type="file" accept="application/pdf" style="display:none;" />
-          </label>
-        </div>
-
-        <div class="card-panel" style="background: #ffffff; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0;">
-          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
-            <thead>
-              <tr style="border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 600;">
-                <th style="padding: 0.75rem 1rem;">Document</th>
-                <th style="padding: 0.75rem 1rem;">PDF</th>
-                <th style="padding: 0.75rem 1rem;">Issued</th>
-                <th style="padding: 0.75rem 1rem;">Pages</th>
-                <th style="padding: 0.75rem 1rem;">Status</th>
-              </tr>
-            </thead>
-            <tbody>${groups.map((group) => groupRow(group) + group.rows.map((row) => tableRow(row, caseData.id)).join("")).join("")}</tbody>
-          </table>
-        </div>
-      </div>
-    `;
-  }
+  mount: (container, caseData) => mountKnowledgeBase(container, caseData),
 };

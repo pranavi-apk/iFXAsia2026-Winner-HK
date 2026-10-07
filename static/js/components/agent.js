@@ -5,6 +5,7 @@ import { buildOwnershipView } from "../sections/ownership/view-model.js";
 import { initPresenceMap } from "../sections/ownership/map/index.js";
 import { renderPresenceCard } from "../sections/ownership/presence-card.js";
 import { mountStructure, renderStructureCard } from "../sections/ownership/structure/index.js";
+import { mountKnowledgeBase } from "../sections/documents/index.js";
 import { renderDetails, renderFindings } from "../sections/ownership/inspector.js";
 
 const STEPS = [
@@ -359,7 +360,8 @@ function renderOverviewHtml(caseData, view, promptText = "Overview & Findings") 
       : [{ title: `${name} analysed. No specific UBO entities found in the document pack.` }];
 
   return `
-    <div class="agent-thread">
+    <div class="agent-thread agent-thread-fixed">
+      <div class="agent-thread-scroll">
       <div class="chat-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
       <div class="bubble user">${escapeHtml(promptText)}</div>
 
@@ -467,6 +469,7 @@ function renderOverviewHtml(caseData, view, promptText = "Overview & Findings") 
           </div>
         </div>
       </div>
+      </div>
 
       <!-- Centered Bottom LLM Chat Input Box for Case Overview -->
       <form class="overview-bottom-composer-bar" id="overview-chat-form">
@@ -511,7 +514,7 @@ function showWork(id, promptText = "Overview & Findings") {
   }
   const view = buildOwnershipView(caseData);
   const isOverview = id === "overview";
-  const hideSidecarClass = (isOverview || !isSidecarOpen) ? "sidecar-collapsed" : "";
+  const hideSidecarClass = (!isSidecarOpen) ? "sidecar-collapsed" : "";
   
   shell(`
     <div class="agent-layout-with-sidebar">
@@ -539,7 +542,7 @@ function showWork(id, promptText = "Overview & Findings") {
           </button>
           <button type="button" class="sidebar-nav-item ${id === "documents" ? "active" : ""}" data-subnav="documents">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Documents
+            Knowledge Base
           </button>
           <button type="button" class="sidebar-nav-item ${id === "gaps" ? "active" : ""}" data-subnav="gaps">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -547,7 +550,7 @@ function showWork(id, promptText = "Overview & Findings") {
           </button>
         </nav>
 
-        <div class="sidebar-bottom-copilot-pill">
+        <div class="sidebar-bottom-copilot-pill" id="sidebar-copilot-pill" role="button" tabindex="0" title="Open Tracy Copilot">
           <div class="copilot-pill-icon"><span class="sparkle-star">✦</span></div>
           <div class="copilot-pill-text">
             <strong>Tracy AI Copilot</strong>
@@ -564,9 +567,9 @@ function showWork(id, promptText = "Overview & Findings") {
             <h1 class="case-company-name">${escapeHtml(view.legalName || "Silver Oak Holdings Ltd")}</h1>
           </div>
           <div class="case-header-right">
-            ${!isOverview ? `
+            ${true ? `
               <button type="button" class="nav-btn btn-toggle-copilot ${isSidecarOpen ? 'active' : ''}" id="btn-toggle-copilot" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; height: 34px;">
-                <span class="sparkle-star" style="color: #c8a966;">✦</span> Copilot
+                <span class="sparkle-star" style="color: #c8a966;">✦</span> Tracy Copilot
               </button>
             ` : ""}
             <button type="button" class="nav-btn" data-action="help" style="padding: 0.45rem 0.8rem; font-size: 0.82rem; height: 34px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Help</button>
@@ -581,13 +584,13 @@ function showWork(id, promptText = "Overview & Findings") {
         </header>
 
 
-        <div class="agent-work-split-container ${isOverview ? "no-sidecar" : ""} ${hideSidecarClass}">
+        <div class="agent-work-split-container ${hideSidecarClass}">
           <!-- Main Content View Panel -->
           <div class="agent-main-content-panel">
             <div class="agent-panel-body" id="agent-panel"></div>
           </div>
 
-          ${!isOverview ? `
+          ${true ? `
             <!-- Right Sidecar LLM Chat Panel -->
             <div class="agent-sidecar-chat-panel">
               <div class="sidecar-header">
@@ -609,30 +612,6 @@ function showWork(id, promptText = "Overview & Findings") {
                   <p>You can ask me about this case!</p>
                 </div>
 
-                <!-- Suggested Asking Questions (Dynamic based on case data) -->
-                <div class="sidecar-suggested-section">
-                  <span class="suggested-lbl">Try asking:</span>
-                  ${(() => {
-                    const uboName = (view.effectiveOwners && view.effectiveOwners[0]) ? view.effectiveOwners[0].name : "David Chan";
-                    const primaryComp = view.legalName || "Silver Oak";
-                    const prompts = [
-                      { ask: `Why is ${uboName} considered the UBO?`, icon: `<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>` },
-                      { ask: `Show me all entities in Singapore`, icon: `<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 16 14"/>` },
-                      { ask: `Are there any missing documents?`, icon: `<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>` },
-                      { ask: `Explain the connection between Sunrise Capital and ${primaryComp}`, icon: `<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>` },
-                      { ask: `Draft a chase email for the missing documents`, icon: `<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>` }
-                    ];
-                    return prompts.map(p => `
-                      <button type="button" class="sidecar-prompt-pill" data-ask="${escapeHtml(p.ask)}">
-                        <div class="pill-left">
-                          <span class="pill-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8b5e2b" stroke-width="2">${p.icon}</svg></span>
-                          <span>${escapeHtml(p.ask)}</span>
-                        </div>
-                        <svg class="arrow-right" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                      </button>
-                    `).join("");
-                  })()}
-                </div>
 
                 ${sidecarChatHistory.map(msg => `
                   <div class="sidecar-msg ${msg.role}">${escapeHtml(msg.text)}</div>
@@ -655,6 +634,12 @@ function showWork(id, promptText = "Overview & Findings") {
         </div>
       </div>
     </div>`);
+
+  root.querySelector("#sidebar-copilot-pill")?.addEventListener("click", () => {
+    if (!isSidecarOpen) {
+      root.querySelector("#btn-toggle-copilot")?.click();
+    }
+  });
 
   root.querySelector("#btn-toggle-copilot")?.addEventListener("click", () => {
     isSidecarOpen = !isSidecarOpen;
@@ -748,94 +733,40 @@ function showWork(id, promptText = "Overview & Findings") {
   } else if (id === "people") {
     panel.innerHTML = `${renderAIKeyInsightBanner("people", caseData, view)}${renderDetails(view)}`;
   } else if (id === "documents") {
-    const docs = caseData.documents || [
-      { filename: "Certificate_of_Incorporation.pdf", pages: 4, type: "Registration", status: "Indexed in KG" },
-      { filename: "Register_of_Directors_and_Members.pdf", pages: 6, type: "UBO Record", status: "Indexed in KG" },
-      { filename: "Amgen_Board_Resolution.pdf", pages: 3, type: "Governance", status: "Indexed in KG" }
-    ];
-
-    panel.innerHTML = `
-      ${renderAIKeyInsightBanner("documents", caseData, view)}
-      <div class="doc-directory-container">
-        <div class="doc-directory-header">
-          <div>
-            <h2>Document Directory & Knowledge Graph</h2>
-            <p class="email-note">All uploaded PDFs are automatically OCR-parsed, ground-cited, and merged into Tracy's Central Knowledge Graph network.</p>
-          </div>
-          <label class="btn-upload-doc-dir">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Upload New Document
-            <input id="dir-upload-input" type="file" accept="application/pdf" multiple hidden />
-          </label>
-        </div>
-
-        <div class="kg-graph-summary-card">
-          <div class="kg-header">
-            <span class="kg-badge">⚡ Active Knowledge Graph Index</span>
-            <span class="kg-stats">${docs.length} Documents · ${view.presence.entities || 4} Entity Nodes · ${view.presence.ubos || 3} Person Nodes · 12 Citation Quotes</span>
-          </div>
-          <div class="kg-graph-visual">
-            <div class="kg-node node-primary">${escapeHtml(view.legalName || "Target Company")}</div>
-            <div class="kg-line"></div>
-            <div class="kg-node node-ubo">David Chan (UBO 80%)</div>
-            <div class="kg-line"></div>
-            <div class="kg-node node-doc">BVI Register Node</div>
-          </div>
-        </div>
-
-        <div class="doc-list-grid">
-          ${docs.map((doc, idx) => `
-            <div class="doc-file-card">
-              <div class="doc-file-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="#dc2626"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-              </div>
-              <div class="doc-file-details">
-                <strong>${escapeHtml(doc.filename || doc.title || `Document_${idx+1}.pdf`)}</strong>
-                <span>${doc.type || "Corporate Record"} · ${doc.pages || 2} Pages · ${doc.status || "Indexed in KG"}</span>
-              </div>
-              <span class="kg-status-chip">✓ KG Mapped</span>
-            </div>`).join("")}
-        </div>
-      </div>`;
-
-    panel.querySelector("#dir-upload-input")?.addEventListener("change", (e) => {
-      const newFiles = Array.from(e.target.files || []);
-      if (!newFiles.length) return;
-      newFiles.forEach(f => {
-        caseData.documents = caseData.documents || [];
-        caseData.documents.push({ filename: f.name, pages: Math.floor(Math.random()*5)+1, type: "New Addition", status: "Indexed in KG" });
-      });
-      showWork("documents");
-    });
+    panel.innerHTML = renderAIKeyInsightBanner("documents", caseData, view) + '<div id="kb-host"></div>';
+    mountKnowledgeBase(panel.querySelector("#kb-host"), caseData);
   } else if (id === "gaps") {
+    const gapItems = gapsOf(caseData).length ? gapsOf(caseData) : (view.keyFindings || []);
+    const steps = gapItems.map((g, i) => `
+      <li class="gap-step">
+        <span class="gap-step-num">${i + 1}</span>
+        <div class="gap-step-body">
+          <div class="gap-step-title">${escapeHtml(g.title || "")}</div>
+          ${(g.detail || g.sub) ? `<div class="gap-step-detail">${escapeHtml(g.detail || g.sub)}</div>` : ""}
+        </div>
+        <span class="gap-step-tag">Request</span>
+      </li>`).join("");
     panel.innerHTML = `
       ${renderAIKeyInsightBanner("gaps", caseData, view)}
-      <div class="gaps-combined-wrapper">
-        <div class="gaps-section-block">
-          <div class="section-title-header">
-            <h2>Gaps & Missing Evidence Checklist</h2>
-            <span class="badge-gaps-count">${gapsOf(caseData).length || 3} Gaps Identified</span>
-          </div>
-          ${renderFindings(view)}
-        </div>
-
-        <div class="gaps-section-block" style="margin-top: 1.75rem;">
-          <div class="section-title-header">
-            <h2><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.4rem;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Automated Chase Email Dispatch</h2>
-            <span class="badge-email-ready">Ready for Relationship Manager</span>
-          </div>
-          <p class="email-note">Generated from missing evidence items in English & Traditional Chinese (Bilingual). Copy or send directly.</p>
+      <div class="gaps-layout">
+        <section class="gaps-card">
+          <header class="gaps-card-head">
+            <h3>Missing evidence &amp; next steps</h3>
+            <span class="gaps-count">${gapItems.length} open</span>
+          </header>
+          <ol class="gap-steps">${steps || '<li class="gap-step-empty">No outstanding items.</li>'}</ol>
+        </section>
+        <section class="gaps-card">
+          <header class="gaps-card-head">
+            <h3>Chase email draft</h3>
+            <span class="gaps-count ready">Ready to send</span>
+          </header>
           <textarea class="email-draft" id="chase-email">${escapeHtml(draftEmail(caseData, view))}</textarea>
-          <div class="email-actions-bar" style="margin-top: 0.75rem; display: flex; gap: 0.75rem;">
-            <button type="button" class="btn btn-primary" onclick="alert('Email dispatched to Client Relationship Officer!')">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              Send Chase Email
-            </button>
-            <button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText(document.getElementById('chase-email').value); alert('Copied to clipboard!')">
-              Copy Draft
-            </button>
+          <div class="gaps-email-actions">
+            <button type="button" class="btn btn-primary" onclick="alert('Email dispatched to Client Relationship Officer!')">Send chase email</button>
+            <button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText(document.getElementById('chase-email').value); alert('Copied to clipboard!')">Copy draft</button>
           </div>
-        </div>
+        </section>
       </div>`;
   } else {
     panel.innerHTML = `${renderAIKeyInsightBanner("gaps", caseData, view)}${renderFindings(view)}`;
@@ -1206,29 +1137,6 @@ function renderCopilotSidecar(panelElem, caseData, activeSectionId = "map") {
         <p>You can ask me about this case!</p>
       </div>
 
-      <div class="sidecar-suggested-section">
-        <span class="suggested-lbl">Try asking:</span>
-        ${(() => {
-          const uboName = (view.effectiveOwners && view.effectiveOwners[0]) ? view.effectiveOwners[0].name : "David Chan";
-          const primaryComp = view.legalName || "Silver Oak";
-          const prompts = [
-            { ask: `Why is ${uboName} considered the UBO?`, icon: `<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>` },
-            { ask: `Show me all entities in Singapore`, icon: `<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 16 14"/>` },
-            { ask: `Are there any missing documents?`, icon: `<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>` },
-            { ask: `Explain the connection between Sunrise Capital and ${primaryComp}`, icon: `<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>` },
-            { ask: `Draft a chase email for the missing documents`, icon: `<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>` }
-          ];
-          return prompts.map(p => `
-            <button type="button" class="sidecar-prompt-pill" data-ask="${escapeHtml(p.ask)}">
-              <div class="pill-left">
-                <span class="pill-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8b5e2b" stroke-width="2">${p.icon}</svg></span>
-                <span>${escapeHtml(p.ask)}</span>
-              </div>
-              <svg class="arrow-right" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          `).join("");
-        })()}
-      </div>
 
       ${sidecarChatHistory.map(msg => `
         <div class="sidecar-msg ${msg.role}">${escapeHtml(msg.text)}</div>
