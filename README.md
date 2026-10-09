@@ -1,5 +1,7 @@
 # Tracy
 
+<img src="docs/ifx-hack-first-place.jpg" alt="Team Iridium with the first-place cheque at iFX Hack Hong Kong" width="520">
+
 **First place, AI & Intelligent Trading track.** Team Iridium — Pranavi, Niharika, and Anas — won iFX Hack Hong Kong 2026 (iFX EXPO Asia) with Tracy. The prize was HKD 16,000.
 
 Tracy is an AI compliance workspace for Know Your Business (KYB) analysts. A company applies to open an account. The analyst uploads the document pack. Tracy reads it, works out who actually owns and controls the company, flags what is missing or inconsistent, and drafts the review. The analyst still makes the decision.
