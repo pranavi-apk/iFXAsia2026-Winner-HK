@@ -1,0 +1,8 @@
+/*.pdf
+.venv
+__pycache__
+data/cases
+data/uploads
+data/sanctions_cache
+data/ocr_cache
+data/registry_cache

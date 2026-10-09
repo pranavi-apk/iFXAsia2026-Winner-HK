@@ -1,0 +1,5 @@
+node_modules
+out
+out/rec
+.DS_Store
+public/capture.mp4

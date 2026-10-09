@@ -4,7 +4,7 @@
 // its subsidiaries below ("down"). Each direction is a tree; a node's children
 // are only laid out while that node is expanded.
 export const CARD_W = 250;
-export const CARD_H = 88;
+export const CARD_H = 108;
 export const GAP_X = 28;
 export const GAP_Y = 72; // vertical space between rows, for the arrow and percentage
 export const ARROW_RUN = GAP_Y / 2; // the last vertical stretch into a card
@@ -97,8 +97,8 @@ export function layoutStructure(structure, expanded) {
     const to = { x: owned.cx, y: owned.y };
     // Owners' arrows meet at the owned card, so an owner's percentage sits just under its own card;
     // a subsidiary's sits just above it. That keeps every pill on the arrow it belongs to.
-    const pillAt = e.dir === "down" ? { x: to.x, y: to.y - ARROW_RUN / 2 - 4 } : { x: from.x, y: from.y + ARROW_RUN / 2 };
-    edges.push({ from, to, pct: e.node.pct, pillAt });
+    const pillAt = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+    edges.push({ from, to, pct: e.node.pct ?? null, pillAt });
   }
 
   return {

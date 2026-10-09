@@ -4,8 +4,20 @@ async function request(url, options) {
   return response.json();
 }
 
+async function fromStoredCase(id, caseData, path) {
+  try {
+    return await request(`/api/cases/${encodeURIComponent(id)}${path}`);
+  } catch (error) {
+    if (!caseData?.intake || !String(error.message).includes("Case not found")) throw error;
+    await request("/api/cases/sample", { method: "POST" });
+    return request("/api/cases/silver-oak" + path);
+  }
+}
+
 export const api = {
+  listCases: () => request("/api/cases"),
   sampleCase: () => request("/api/cases/sample", { method: "POST" }),
+
 
   uploadCase(files) {
     const body = new FormData();
@@ -13,9 +25,15 @@ export const api = {
     return request("/api/cases", { method: "POST", body });
   },
 
+  addDocuments(id, files) {
+    const body = new FormData();
+    for (const file of files) body.append("files", file);
+    return request(`/api/cases/${encodeURIComponent(id)}/documents`, { method: "POST", body });
+  },
+
   getCase: (id) => request(`/api/cases/${encodeURIComponent(id)}`),
 
-  riskRating: (id) => request(`/api/cases/${encodeURIComponent(id)}/risk-rating`),
+  riskRating: (id, caseData) => fromStoredCase(id, caseData, "/risk-rating"),
 
   async riskReport(id) {
     const response = await fetch(`/api/cases/${encodeURIComponent(id)}/risk-rating/report`);
@@ -23,7 +41,7 @@ export const api = {
     return response.blob();
   },
 
-  getScreening: (id) => request(`/api/cases/${encodeURIComponent(id)}/sanctions`),
+  getScreening: (id, caseData) => fromStoredCase(id, caseData, "/sanctions"),
 
   liveLookup: (id, name) =>
     request(`/api/cases/${encodeURIComponent(id)}/sanctions/lookup`, {

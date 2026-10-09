@@ -17,10 +17,10 @@ from datetime import datetime, timezone
 
 import httpx
 
-from tally.config import DATA
+from tally.config import runtime_dir
 from tally.screening import _tokens, list_score, name_forms
 
-CACHE = DATA / "sanctions_cache"
+CACHE = runtime_dir("sanctions_cache")
 UN_URL = "https://scsanctions.un.org/resources/xml/en/consolidated.xml"
 STOP = {
     "limited", "company", "holdings", "trading", "ltd", "inc", "llc", "corp",

@@ -17,9 +17,15 @@ from tally.assessment.risk_report import build_report
 from tally.assessment.pack import classify
 from tally.intake import build_intake, pack_documents
 from tally.mock_pack import PACK_DIR, write_pack
-from tally.store import case_dir, new_id, save, stamp
+from tally.store import append_audit, case_dir, new_id, save, stamp, list_all
 
 router = APIRouter(prefix="/api/cases", tags=["cases"])
+
+
+@router.get("")
+def list_cases():
+    return list_all()
+
 
 
 def _texts(folder: Path) -> dict[str, str]:
@@ -199,11 +205,14 @@ async def create_case(files: list[UploadFile] = File(...)):
             dest = folder / path.name
             if not dest.exists():
                 shutil.copy(path, dest)
+            sample_dest = case_dir(SAMPLE_ID) / path.name
+            if not sample_dest.exists():
+                shutil.copy(path, sample_dest)
         texts = _texts(folder)
         pages = {path.name: len(PdfReader(str(path)).pages) for path in folder.glob("*.pdf")}
         assessment = _prepared_assessment(texts, pages)
         title = assessment["entity"]["legal_name"]
-        return stamp(case_id, title, assessment)
+        return stamp(SAMPLE_ID, title, assessment)
     assessment = assess(_texts(folder))
     title = (assessment.get("entity") or {}).get("legal_name") or "Uploaded case"
     return ensure_adverse_media(stamp(case_id, title, assessment))
@@ -227,6 +236,34 @@ def _with_funds(case: dict) -> dict:
         case.get("companies") or [],
     )
     return save(case)
+
+
+@router.post("/{case_id}/documents")
+async def add_documents(case_id: str, files: list[UploadFile] = File(...)):
+    """Add PDFs to an open case and re-read the whole pack, so new names join the people already found."""
+    case = load_case(case_id)
+    folder = case_dir(case_id)
+    added = []
+    for upload in files:
+        if not upload.filename or not upload.filename.lower().endswith(".pdf"):
+            continue
+        target = folder / Path(upload.filename).name
+        target.write_bytes(await upload.read())
+        PdfReader(str(target))
+        added.append(target.name)
+    if not added:
+        raise HTTPException(status_code=400, detail="Upload at least one PDF.")
+    texts = _texts(folder)
+    if case.get("intake"):
+        pages = {path.name: len(PdfReader(str(path)).pages) for path in folder.glob("*.pdf")}
+        assessment = _prepared_assessment(texts, pages)
+    else:
+        assessment = assess(texts)
+    keep = {key: case[key] for key in ("id", "title", "created_at", "decision", "audit", "adverse_media", "memo") if key in case}
+    updated = {**assessment, **keep}
+    updated["added_documents"] = added
+    append_audit(updated, "documents_added", f"Added {', '.join(added)} to the Knowledge Base.")
+    return save(updated)
 
 
 @router.get("/{case_id}")
@@ -253,7 +290,10 @@ def get_risk_report(case_id: str):
 
 @router.get("/{case_id}/files/{filename}")
 def get_file(case_id: str, filename: str):
-    path = case_dir(case_id) / Path(filename).name
+    name = Path(filename).name
+    path = case_dir(case_id) / name
+    if not path.exists() and (PACK_DIR / name).exists():
+        shutil.copy(PACK_DIR / name, path)
     if not path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(path, media_type="application/pdf")

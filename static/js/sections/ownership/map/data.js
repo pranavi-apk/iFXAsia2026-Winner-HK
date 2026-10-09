@@ -15,7 +15,7 @@ export function buildMapData(structure) {
     if (!country) return null;
     const entry = (countries[country.key] ||= { label: country.label, latlng: country.latlng, count: 0, names: [], ubos: [] });
     if (node.kind === "person") {
-      entry.ubos.push({ name: node.name, pct: node.pct });
+      entry.ubos.push({ name: node.name, pct: node.pct ?? null, role: node.role || "" });
     } else {
       entry.count += 1;
       entry.names.push({ name: node.name, role: node.role });
@@ -29,7 +29,7 @@ export function buildMapData(structure) {
     if (!from || !to || from.key === to.key) return;
     const key = `${from.key}>${to.key}`;
     if (!links.has(key)) links.set(key, { from: from.key, to: to.key, items: [] });
-    links.get(key).items.push({ owner: owner.name, owned: owned.name, pct: owned.pct ?? owner.pct });
+    links.get(key).items.push({ owner: owner.name, owned: owned.name, pct: owned.pct ?? owner.pct ?? null, role: owner.role || "" });
   }
 
   const applicant = { ...structure.applicant, kind: "company" };

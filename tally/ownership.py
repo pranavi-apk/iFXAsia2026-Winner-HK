@@ -1,4 +1,9 @@
-"""UBO CHART"""
+"""Effective ownership from direct percentage links.
+
+The traversal multiplies percentages along each path and sums paths that
+end at the same person. Cycles are reported and not followed again.
+A company with no owners above it is a gap, not a forced percentage.
+"""
 
 
 def _key(name: str) -> str:

@@ -213,7 +213,7 @@ export default {
     if (!caseId) return;
 
     // Fetch screening results
-    api.getScreening(caseId)
+    api.getScreening(caseId, caseData)
       .then((data) => _render(container, caseData, data))
       .catch((err) => {
         container.querySelector(".sanctions-loading").innerHTML =
@@ -331,7 +331,7 @@ function _bindTools(container, caseData) {
     result.textContent = "Searching public mentions. Only names are sent…";
     api.adverseMedia(caseId).then((saved) => {
       state.case = saved;
-      api.getScreening(caseId).then((fresh) => _render(container, saved, fresh));
+      api.getScreening(caseId, saved).then((fresh) => _render(container, saved, fresh));
     }).catch((error) => {
       result.textContent = error.message;
     });

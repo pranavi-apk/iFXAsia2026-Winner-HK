@@ -1,0 +1,17 @@
+[project]
+name = "tracy"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.115.6",
+    "uvicorn==0.34.0",
+    "python-multipart==0.0.20",
+    "pypdf==5.1.0",
+    "pymupdf==1.28.2",
+    "fpdf2==2.8.2",
+    "httpx==0.28.1",
+    "pypinyin==0.53.0",
+]
+
+[tool.vercel]
+entrypoint = "tally.main:app"

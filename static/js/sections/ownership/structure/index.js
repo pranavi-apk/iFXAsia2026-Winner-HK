@@ -2,41 +2,60 @@ import { escapeHtml } from "../../../core/dom.js";
 import { flagImg } from "../../../lib/flags.js";
 import { icon } from "../../../lib/icons.js";
 import { createCanvas } from "./canvas.js";
-import { ARROW_RUN, CARD_W, expKey, layoutStructure } from "./layout.js";
+import { CARD_W, expKey, layoutStructure } from "./layout.js";
 
 export function renderStructureCard() {
   return `
-    <div class="card-panel" id="structure-card">
-      <div class="card-title-row">
-        <h2>Ownership Structure</h2>
+    <div class="card-panel structure-board" id="structure-card">
+      <div class="card-title-row structure-board-head">
+        <div class="structure-board-title">
+          <h2>Ownership structure</h2>
+          <p>Owners sit above the applicant. Entities it owns sit below.</p>
+        </div>
         <div class="tree-controls">
-          <button class="btn btn-secondary btn-sm" data-action="collapse">Collapse All</button>
+          <button class="btn btn-secondary btn-sm" data-action="collapse">Collapse all</button>
           <button class="btn btn-secondary btn-sm" data-action="fit">Fit</button>
-          <button class="btn btn-secondary btn-sm" data-action="zoom-out" aria-label="Zoom out">-</button>
+          <button class="btn btn-secondary btn-sm" data-action="zoom-out" aria-label="Zoom out">−</button>
           <span class="tree-zoom-label" data-zoom-label>100%</span>
           <button class="btn btn-secondary btn-sm" data-action="zoom-in" aria-label="Zoom in">+</button>
         </div>
       </div>
       <div class="tree-viewport" data-viewport>
         <div class="tree-world" data-world></div>
+        <div class="tree-legend">
+          <span><i class="swatch root"></i> Applicant</span>
+          <span><i class="swatch person"></i> Person</span>
+          <span><i class="swatch company"></i> Company</span>
+        </div>
       </div>
     </div>`;
+}
+
+function initials(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  const letters = parts.length > 1 ? `${parts[0][0]}${parts[parts.length - 1][0]}` : (parts[0] || "?").slice(0, 2);
+  return escapeHtml(letters.toUpperCase());
 }
 
 function nodeHtml(entry) {
   const { node, cx, y, isRoot } = entry;
   const isPerson = node.kind === "person";
-  const iconHtml = isPerson ? icon("user", 20) : icon(isRoot ? "buildingFull" : "building", isRoot ? 20 : 18);
-  const second = isPerson && node.pct != null ? `<strong>${node.pct}%</strong>` : escapeHtml(node.role || "");
-  const rootStyle = isRoot ? "border: 2px solid #2563eb; background: #faf5ff;" : "";
-  const iconStyle = isRoot ? ' style="background: #eff6ff; color: #2563eb;"' : "";
+  const kind = isRoot ? "root" : isPerson ? "person" : "company";
+  const kicker = isRoot ? "Applicant" : escapeHtml(node.role || (isPerson ? "Individual" : "Company"));
+  const mark = isPerson
+    ? `<div class="node-avatar" aria-hidden="true">${initials(node.name)}</div>`
+    : `<div class="node-icon-box">${icon(isRoot ? "buildingFull" : "building", 18)}</div>`;
+  const share = node.pct != null ? `<span class="node-pct">${node.pct}%</span>` : "";
   return `
-    <div class="tree-node-card in-canvas" style="left:${cx - CARD_W / 2}px; top:${y}px; ${rootStyle}">
-      <div class="node-icon-box"${iconStyle}>${iconHtml}</div>
+    <div class="tree-node-card in-canvas is-${kind}" style="left:${cx - CARD_W / 2}px; top:${y}px;">
+      ${mark}
       <div class="node-details">
+        <div class="node-kicker">${kicker}</div>
         <div class="node-name" title="${escapeHtml(node.name)}">${escapeHtml(node.name)}</div>
-        <div class="node-sub">${escapeHtml(node.country)}</div>
-        <div class="node-sub">${second}</div>
+        <div class="node-meta">
+          <span class="node-sub">${escapeHtml(node.country || "")}</span>
+          ${share}
+        </div>
       </div>
       ${node.tag ? `<span class="node-tag">${escapeHtml(node.tag)}</span>` : ""}
       ${isPerson ? "" : flagImg(node.country)}
@@ -44,7 +63,8 @@ function nodeHtml(entry) {
 }
 
 function edgePath({ from, to }) {
-  return `M ${from.x} ${from.y} V ${to.y - ARROW_RUN} H ${to.x} V ${to.y}`;
+  const mid = (from.y + to.y) / 2;
+  return `M ${from.x} ${from.y} C ${from.x} ${mid}, ${to.x} ${mid}, ${to.x} ${to.y}`;
 }
 
 function worldHtml(layout) {
@@ -64,8 +84,8 @@ function worldHtml(layout) {
   return `
     <svg class="tree-edges" width="${layout.width}" height="${layout.height}">
       <defs>
-        <marker id="tree-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8" stroke="none" />
+        <marker id="tree-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#b48d3c" stroke="none" />
         </marker>
       </defs>
       ${paths}

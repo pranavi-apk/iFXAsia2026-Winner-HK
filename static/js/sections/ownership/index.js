@@ -20,10 +20,6 @@ export default {
   label: "Ownership & Control",
 
   mount(container, caseData) {
-    if (!caseData.intake) {
-      container.innerHTML = pageHeader({ title: "Ownership & Control", subtitle: "This case has no structured intake. Open the sample case." });
-      return;
-    }
     const view = buildOwnershipView(caseData);
 
     container.innerHTML = `

@@ -10,7 +10,7 @@ function countryBody(info) {
     .map((e) => `<li><strong>${escapeHtml(e.name)}</strong><span>${escapeHtml(e.role)}</span></li>`)
     .join("");
   const ubos = info.ubos
-    .map((u) => `<li><strong>${escapeHtml(u.name)}</strong><span>${u.pct == null ? "Named in the pack" : `UBO · ${u.pct}%`}</span></li>`)
+    .map((u) => `<li><strong>${escapeHtml(u.name)}</strong><span>${u.pct == null ? escapeHtml(u.role || "Named in the pack") : `UBO · ${u.pct}%`}</span></li>`)
     .join("");
   const entityLine = info.count ? `<div class="map-note-count">${info.count} ${info.count === 1 ? "entity" : "entities"}</div>` : "";
   return `
@@ -22,11 +22,11 @@ function countryBody(info) {
 
 function linkBody(link, countries) {
   const items = link.items
-    .map((i) => `<li><strong>${escapeHtml(i.owner)} → ${escapeHtml(i.owned)}</strong><span>${i.pct == null ? "Named in the pack" : `${i.pct}% ownership`}</span></li>`)
+    .map((i) => `<li><strong>${escapeHtml(i.owner)} → ${escapeHtml(i.owned)}</strong><span>${i.pct == null ? escapeHtml(i.role || "Control relationship") : `${i.pct}% ownership`}</span></li>`)
     .join("");
   return `
     <h3>${escapeHtml(countries[link.from].label)} → ${escapeHtml(countries[link.to].label)}</h3>
-    <div class="map-note-count">${link.items.length} ownership ${link.items.length === 1 ? "link" : "links"}</div>
+    <div class="map-note-count">${link.items.length} ${link.items.length === 1 ? "relationship" : "relationships"}</div>
     <ul>${items}</ul>`;
 }
 

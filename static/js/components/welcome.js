@@ -7,7 +7,7 @@ const STATS = [
   { icon: "🛡️", num: "5,000+", label: "UN & HK Sanctions Entries" },
 ];
 
-export function renderWelcome(container, { onSample, onUpload }) {
+export function renderWelcome(container, { onUpload }) {
   container.innerHTML = `
     <div class="welcome-hero">
       <div class="hero-content">
@@ -16,11 +16,7 @@ export function renderWelcome(container, { onSample, onUpload }) {
         <p>Select a compliance case to disentangle UBO structures and screen live Sanctions & PEP lists.</p>
 
         <div class="hero-cta">
-          <button id="hero-sample-btn" class="btn btn-primary btn-lg shadow-glow">
-            ${icon("play", 18)}
-            Launch Demo Case (Silver Oak Holdings / Harbour Lantern)
-          </button>
-          <label class="btn btn-secondary btn-lg upload-btn shadow-hover">
+          <label class="btn btn-primary btn-lg upload-btn shadow-glow">
             ${icon("upload", 18)}
             Upload Corporate PDF Pack
             <input id="hero-files" type="file" accept="application/pdf" multiple />
@@ -47,7 +43,6 @@ export function renderWelcome(container, { onSample, onUpload }) {
       </div>
     </div>`;
 
-  container.querySelector("#hero-sample-btn").addEventListener("click", onSample);
   container.querySelector("#hero-files").addEventListener("change", (event) => {
     const files = Array.from(event.target.files || []);
     event.target.value = "";

@@ -11,7 +11,7 @@
 
   <!-- Styles: shared first, then per-section and per-component. Order matters. -->
   <link rel="stylesheet" href="/static/css/base.css" />
-  <link rel="stylesheet" href="/static/css/layout.css" />
+  <link rel="stylesheet" href="/static/css/layout.css?v=4" />
   <link rel="stylesheet" href="/static/css/sections/documents.css" />
   <link rel="stylesheet" href="/static/css/sections/ownership.css?v=3" />
   <link rel="stylesheet" href="/static/css/sections/sanctions.css" />
@@ -19,38 +19,18 @@
   <link rel="stylesheet" href="/static/css/sections/approval_memo.css" />
   <link rel="stylesheet" href="/static/css/sections/risk-rating.css" />
   <link rel="stylesheet" href="/static/css/components/pipeline-modal.css" />
-  <link rel="stylesheet" href="/static/css/components/welcome.css" />
+  <link rel="stylesheet" href="/static/css/components/agent.css?v=5" />
+  <link rel="stylesheet" href="/static/css/components/welcome.css?v=4" />
 
   <!-- Libraries used by the ownership map (globals: L, topojson) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/static/vendor/topojson-client.min.js"></script>
 
-  <script type="module" src="/static/js/main.js"></script>
+  <script src="/static/vendor/vis-network.min.js"></script>
+  <script type="module" src="/static/js/main.js?v=8"></script>
 </head>
 <body class="light-theme">
-  <header class="tracy-header">
-    <div class="header-brand">
-      <button type="button" id="sidebar-toggle" class="sidebar-toggle" aria-label="Open sections" aria-expanded="false">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="4" y1="7" x2="20" y2="7"/>
-          <line x1="4" y1="12" x2="20" y2="12"/>
-          <line x1="4" y1="17" x2="20" y2="17"/>
-        </svg>
-      </button>
-      <img src="/static/img/tracy_logo.png" alt="Tracy Logo" class="tracy-logo-img" />
-    </div>
-    <div class="header-container">
-      <span class="header-badge">AI Compliance Intelligence Platform</span>
-      <div class="header-right">
-        <label class="header-upload">
-          Upload pack
-          <input id="header-files" type="file" accept="application/pdf" multiple />
-        </label>
-        <span class="system-status-pill"><span class="status-dot"></span> Live System</span>
-      </div>
-    </div>
-  </header>
   <div class="app-layout">
     <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
     <aside id="sidebar" class="sidebar"></aside>
